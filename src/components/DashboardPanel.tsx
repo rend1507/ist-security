@@ -41,19 +41,17 @@ function pct(n: number) {
 }
 
 function BarChart({ stats }: { stats: Stats }) {
-  /** Empat status eksklusif — terlambat tidak masuk "Sudah kembali" / "Masih dibawa" */
+  /** Siap dipinjam = total − masih dibawa − terlambat (gabungan siap + sudah kembali) */
+  const siapDipinjam = Math.max(
+    0,
+    stats.total - stats.outOnly - stats.overdue
+  );
   const bars = [
     {
-      label: "Siap (belum dipinjam)",
-      value: stats.available,
+      label: "Siap dipinjam",
+      value: siapDipinjam,
       color: "bg-emerald-600",
       text: "text-emerald-900",
-    },
-    {
-      label: "Sudah kembali",
-      value: stats.returnedOnly,
-      color: "bg-teal-600",
-      text: "text-teal-900",
     },
     {
       label: "Masih dibawa",
@@ -62,7 +60,7 @@ function BarChart({ stats }: { stats: Stats }) {
       text: "text-amber-950",
     },
     {
-      label: "Terlambat (belum kembali)",
+      label: "Terlambat",
       value: stats.overdue,
       color: "bg-rose-600",
       text: "text-rose-950",
@@ -78,8 +76,8 @@ function BarChart({ stats }: { stats: Stats }) {
         Status kunci (bar chart)
       </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Tiap kunci masuk tepat satu status. Terlambat ≠ sudah kembali dan ≠
-        masih dibawa (hanya bar merah).
+        Siap dipinjam = total − masih dibawa − terlambat. Terlambat tidak masuk
+        masih dibawa.
       </p>
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
@@ -211,19 +209,16 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
         </div>
         <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 px-3 py-4 text-emerald-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 sm:text-sm">
-            Di rak
+            Siap dipinjam
           </p>
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
-            {stats?.returned ?? "—"}
+            {stats
+              ? Math.max(0, stats.total - stats.outOnly - stats.overdue)
+              : "—"}
           </p>
           <p className="mt-1 font-mono text-sm font-semibold">
             {stats ? pct(stats.returnedPct) : "—"}
           </p>
-          {stats && (
-            <p className="mt-1 text-xs text-emerald-900/80">
-              Siap {stats.available} + sudah kembali {stats.returnedOnly}
-            </p>
-          )}
         </div>
         <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-4 text-amber-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-amber-900 sm:text-sm">
