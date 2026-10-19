@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --accent: #2563eb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-ibm-plex-sans);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ibm-plex-sans), ui-sans-serif, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Kejelasan klik untuk usia ~30–65 */
+button,
+a,
+[role="button"],
+summary {
+  cursor: pointer;
+}
