@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
 import { formatDuration } from "@/lib/domain";
 
@@ -41,13 +36,13 @@ type Stats = {
   updatedAt: string;
 };
 
-/** Persen terhadap total — tanpa toFixed / Math.round */
-function shareOfTotal(part: number, total: number): string {
+/** Persen di UI — bulat (untuk dibaca petugas). */
+function shareLabel(part: number, total: number): string {
   if (total <= 0) return "0%";
-  return `${(part * 100) / total}%`;
+  return `${Math.round((part * 100) / total)}%`;
 }
 
-/** Lebar bar = bagian dari total (bukan dari bar terpanjang) */
+/** Lebar bar — proporsi eksak terhadap total, tanpa pembulatan. */
 function barWidthStyle(part: number, total: number): CSSProperties {
   if (total <= 0 || part <= 0) return { width: "0%" };
   return { width: `calc(${part} / ${total} * 100%)` };
@@ -55,7 +50,6 @@ function barWidthStyle(part: number, total: number): CSSProperties {
 
 function BarChart({ stats }: { stats: Stats }) {
   const total = stats.total;
-  /** Siap dipinjam = total − masih dibawa − terlambat */
   const siapDipinjam = Math.max(0, total - stats.outOnly - stats.overdue);
   const bars = [
     {
@@ -86,7 +80,7 @@ function BarChart({ stats }: { stats: Stats }) {
         Status kunci (bar chart)
       </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Lebar = jumlah / total kunci (bukan 100% terhadap bar terbesar).
+        Lebar bar = jumlah / total (akurat). Angka persen di samping dibulatkan.
       </p>
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
@@ -97,14 +91,14 @@ function BarChart({ stats }: { stats: Stats }) {
                 {b.value}
                 {total > 0 ? (
                   <span className="ml-2 font-normal text-slate-600">
-                    ({shareOfTotal(b.value, total)})
+                    ({shareLabel(b.value, total)})
                   </span>
                 ) : null}
               </span>
             </div>
             <div className="h-8 overflow-hidden rounded-md bg-slate-200">
               <div
-                className={`flex h-full min-w-0 items-center ${b.color} transition-[width] duration-500`}
+                className={`flex h-full min-w-0 items-center ${b.color}`}
                 style={barWidthStyle(b.value, total)}
               >
                 {b.value > 0 && (
@@ -131,14 +125,16 @@ function BarChart({ stats }: { stats: Stats }) {
   );
 }
 
+const POLL_MS = 60_000;
+
 export function DashboardPanel({ initial }: { initial: Stats | null }) {
   const [stats, setStats] = useState<Stats | null>(initial);
   const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
 
   const load = useCallback(async () => {
+    if (typeof document !== "undefined" && document.hidden) return;
     try {
-      const res = await fetch("/api/dashboard");
+      const res = await fetch("/api/dashboard", { cache: "no-store" });
       const json = (await res.json()) as {
         ok: boolean;
         data?: Stats;
@@ -156,18 +152,16 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
   }, []);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      void load();
-      setTick((t) => t + 1);
-    }, 15_000);
-    return () => window.clearInterval(id);
+    const id = window.setInterval(() => void load(), POLL_MS);
+    const onVis = () => {
+      if (!document.hidden) void load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [load]);
-
-  /** Refresh durasi list tiap detik tanpa fetch ulang */
-  useEffect(() => {
-    const id = window.setInterval(() => setTick((t) => t + 1), 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   const updatedLabel = stats?.updatedAt
     ? new Date(stats.updatedAt).toLocaleTimeString("id-ID", {
@@ -179,7 +173,9 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
       })
     : "—";
 
-  void tick;
+  const siap = stats
+    ? Math.max(0, stats.total - stats.outOnly - stats.overdue)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -199,7 +195,7 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
             <span className="font-mono font-semibold text-slate-800">
               {updatedLabel}
             </span>{" "}
-            WIB · auto 15 detik
+            WIB · auto 60 detik
           </span>
         </p>
         <OfflineSyncBadge />
@@ -225,17 +221,10 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
             Siap dipinjam
           </p>
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
-            {stats
-              ? Math.max(0, stats.total - stats.outOnly - stats.overdue)
-              : "—"}
+            {stats ? siap : "—"}
           </p>
-          <p className="mt-1 break-all font-mono text-sm font-semibold">
-            {stats
-              ? shareOfTotal(
-                  Math.max(0, stats.total - stats.outOnly - stats.overdue),
-                  stats.total
-                )
-              : "—"}
+          <p className="mt-1 font-mono text-sm font-semibold">
+            {stats ? shareLabel(siap, stats.total) : "—"}
           </p>
         </div>
         <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-4 text-amber-950 sm:px-4 sm:py-5">
@@ -245,8 +234,8 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.outOnly ?? "—"}
           </p>
-          <p className="mt-1 break-all font-mono text-sm font-semibold">
-            {stats ? shareOfTotal(stats.outOnly, stats.total) : "—"}
+          <p className="mt-1 font-mono text-sm font-semibold">
+            {stats ? shareLabel(stats.outOnly, stats.total) : "—"}
           </p>
         </div>
         <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-4 text-rose-950 sm:px-4 sm:py-5">
@@ -256,8 +245,8 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.overdue ?? "—"}
           </p>
-          <p className="mt-1 break-all font-mono text-sm font-semibold">
-            {stats ? shareOfTotal(stats.overdue, stats.total) : "—"}
+          <p className="mt-1 font-mono text-sm font-semibold">
+            {stats ? shareLabel(stats.overdue, stats.total) : "—"}
           </p>
         </div>
       </div>
@@ -331,9 +320,7 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
                 <li
                   key={r.code}
                   className={`flex justify-between gap-2 rounded-md border-b border-slate-200 px-2 py-1.5 ${
-                    r.status === "overdue"
-                      ? "bg-rose-100"
-                      : "bg-amber-100"
+                    r.status === "overdue" ? "bg-rose-100" : "bg-amber-100"
                   }`}
                 >
                   <span className="min-w-0">

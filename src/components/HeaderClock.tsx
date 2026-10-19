@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSharedNow } from "@/lib/use-shared-now";
 
-function formatWib(d: Date) {
+function formatWib(ts: number) {
+  const d = new Date(ts);
   const hari = d.toLocaleDateString("id-ID", {
     timeZone: "Asia/Jakarta",
     weekday: "long",
@@ -23,20 +24,14 @@ function formatWib(d: Date) {
   return { hari, tanggal, jam };
 }
 
+/** Update tiap 15 detik — cukup untuk jam header, hemat CPU. */
 export function HeaderClock() {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
+  const now = useSharedNow(15_000, true);
   const { hari, tanggal, jam } = formatWib(now);
 
   return (
     <div
       className="min-w-0 text-left leading-tight sm:text-right"
-      aria-live="polite"
       title="Waktu Asia/Jakarta"
     >
       <p className="text-xs font-semibold capitalize text-slate-800 sm:text-sm">

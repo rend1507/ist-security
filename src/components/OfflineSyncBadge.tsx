@@ -10,7 +10,7 @@ export function OfflineSyncBadge() {
   useEffect(() => {
     const tick = () => setPending(readSyncQueue().length);
     tick();
-    const id = window.setInterval(tick, 4000);
+    const id = window.setInterval(tick, 15_000);
     return () => window.clearInterval(id);
   }, []);
 

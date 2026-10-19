@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { durationMs, formatDuration } from "@/lib/domain";
+import { useSharedNow } from "@/lib/use-shared-now";
 
-/** Durasi hidup (tick 1s) untuk kunci yang masih dibawa; selesai = statis. */
+/** Durasi hidup; tick bersama 2s agar hemat resource. */
 export function LiveDuration({
   takeOut,
   giveBack,
@@ -11,17 +11,11 @@ export function LiveDuration({
   takeOut: string | null;
   giveBack: string | null;
 }) {
-  const [now, setNow] = useState(() => Date.now());
   const live = Boolean(takeOut && !giveBack);
-
-  useEffect(() => {
-    if (!live) return;
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, [live]);
+  const now = useSharedNow(2000, live);
 
   if (!takeOut) return <span>—</span>;
-  const ms = durationMs(takeOut, giveBack, now);
+  const ms = durationMs(takeOut, giveBack, live ? now : Date.now());
   if (ms <= 0 && giveBack) return <span>—</span>;
   return <span className="tabular-nums">{formatDuration(ms)}</span>;
 }
