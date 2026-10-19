@@ -101,16 +101,23 @@ export function formatDuration(ms: number): string {
   return hms;
 }
 
+/**
+ * Status tampilan — saling eksklusif (satu kunci = satu bucket).
+ * Prioritas: ada give_back → returned; ada take_out tanpa kembali → out/overdue;
+ * selain itu → available. Jangan andalkan keys.status jika log terbuka.
+ */
 export function classifyStatus(
-  keyStatus: string,
+  _keyStatus: string,
   takeOut: string | null,
   giveBack: string | null,
   overdueMinutes: number,
   now = Date.now()
 ): KeyLogView["status"] {
   if (giveBack) return "returned";
-  if (!takeOut || keyStatus === "available") return "available";
-  const ms = durationMs(takeOut, null, now);
-  if (ms >= overdueMinutes * 60_000) return "overdue";
-  return "out";
+  if (takeOut) {
+    const ms = durationMs(takeOut, null, now);
+    if (ms >= overdueMinutes * 60_000) return "overdue";
+    return "out";
+  }
+  return "available";
 }

@@ -105,18 +105,24 @@ export async function listKeyLogViews(): Promise<{
 export async function getDashboardStats() {
   const { rows, defaultOverdueMinutes } = await listKeyLogViews();
   const total = rows.length;
-  const stillOutRows = rows.filter(
-    (r) => r.status === "out" || r.status === "overdue"
-  );
+
+  /** Empat bucket eksklusif — harus selalu = total */
   const available = rows.filter((r) => r.status === "available").length;
   const returnedOnly = rows.filter((r) => r.status === "returned").length;
   const outOnly = rows.filter((r) => r.status === "out").length;
   const overdue = rows.filter((r) => r.status === "overdue").length;
-  /** Siap + sudah kembali (kunci di rak / selesai) */
-  const returned = available + returnedOnly;
-  const stillOut = stillOutRows.length;
-  const returnedPct = total ? returned / total : 0;
+
+  const stillOutRows = rows.filter(
+    (r) => r.status === "out" || r.status === "overdue"
+  );
+  /** Kunci di rak (siap + sudah kembali) — bukan "masih dibawa/terlambat" */
+  const onRack = available + returnedOnly;
+  const stillOut = outOnly + overdue;
+  const returnedPct = total ? onRack / total : 0;
   const stillOutPct = total ? stillOut / total : 0;
+
+  /** Alias lama `returned` = di rak (untuk kartu dashboard) */
+  const returned = onRack;
 
   const borrowerCount = new Map<string, number>();
   for (const r of rows) {
@@ -160,11 +166,14 @@ export async function getDashboardStats() {
     available,
     returned,
     returnedOnly,
+    onRack,
     stillOut,
     outOnly,
     overdue,
     returnedPct,
     stillOutPct,
+    /** Sanity: available + returnedOnly + outOnly + overdue */
+    chartSum: available + returnedOnly + outOnly + overdue,
     topBorrowers,
     topLongest,
     notBack,

@@ -9,11 +9,13 @@ type Stats = {
   available: number;
   returned: number;
   returnedOnly: number;
+  onRack?: number;
   stillOut: number;
   outOnly: number;
   overdue: number;
   returnedPct: number;
   stillOutPct: number;
+  chartSum?: number;
   topBorrowers: { name: string; count: number }[];
   topLongest: {
     code: string;
@@ -39,9 +41,10 @@ function pct(n: number) {
 }
 
 function BarChart({ stats }: { stats: Stats }) {
+  /** Empat status eksklusif — terlambat tidak masuk "Sudah kembali" / "Masih dibawa" */
   const bars = [
     {
-      label: "Siap",
+      label: "Siap (belum dipinjam)",
       value: stats.available,
       color: "bg-emerald-600",
       text: "text-emerald-900",
@@ -59,13 +62,15 @@ function BarChart({ stats }: { stats: Stats }) {
       text: "text-amber-950",
     },
     {
-      label: "Terlambat",
+      label: "Terlambat (belum kembali)",
       value: stats.overdue,
       color: "bg-rose-600",
       text: "text-rose-950",
     },
   ];
+  const sum = bars.reduce((a, b) => a + b.value, 0);
   const max = Math.max(1, ...bars.map((b) => b.value));
+  const ok = sum === stats.total;
 
   return (
     <div className="rounded-lg border-2 border-slate-300 bg-white p-4">
@@ -73,7 +78,8 @@ function BarChart({ stats }: { stats: Stats }) {
         Status kunci (bar chart)
       </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Jumlah per status — diperbarui otomatis.
+        Tiap kunci masuk tepat satu status. Terlambat ≠ sudah kembali dan ≠
+        masih dibawa (hanya bar merah).
       </p>
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
@@ -85,7 +91,10 @@ function BarChart({ stats }: { stats: Stats }) {
             <div className="h-8 overflow-hidden rounded-md bg-slate-200">
               <div
                 className={`flex h-full items-center ${b.color} transition-all duration-500`}
-                style={{ width: `${(b.value / max) * 100}%`, minWidth: b.value ? "2rem" : 0 }}
+                style={{
+                  width: `${(b.value / max) * 100}%`,
+                  minWidth: b.value ? "2rem" : 0,
+                }}
               >
                 {b.value > 0 && (
                   <span className="px-2 text-sm font-bold text-white">
@@ -97,6 +106,16 @@ function BarChart({ stats }: { stats: Stats }) {
           </li>
         ))}
       </ul>
+      <p
+        className={
+          ok
+            ? "mt-3 text-sm font-semibold text-slate-700"
+            : "mt-3 text-sm font-bold text-rose-800"
+        }
+      >
+        Jumlah bar: {sum} / total {stats.total}
+        {ok ? " ✓" : " — tidak cocok, cek data"}
+      </p>
     </div>
   );
 }
@@ -192,7 +211,7 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
         </div>
         <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 px-3 py-4 text-emerald-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 sm:text-sm">
-            Di rak / siap
+            Di rak
           </p>
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.returned ?? "—"}
@@ -200,6 +219,11 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           <p className="mt-1 font-mono text-sm font-semibold">
             {stats ? pct(stats.returnedPct) : "—"}
           </p>
+          {stats && (
+            <p className="mt-1 text-xs text-emerald-900/80">
+              Siap {stats.available} + sudah kembali {stats.returnedOnly}
+            </p>
+          )}
         </div>
         <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-4 text-amber-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-amber-900 sm:text-sm">
@@ -207,6 +231,9 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           </p>
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.outOnly ?? "—"}
+          </p>
+          <p className="mt-1 text-xs text-amber-950/80">
+            Belum lewat batas terlambat
           </p>
         </div>
         <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-4 text-rose-950 sm:px-4 sm:py-5">
