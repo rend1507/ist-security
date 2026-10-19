@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type CSSProperties,
+} from "react";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
 import { formatDuration } from "@/lib/domain";
 
@@ -36,16 +41,22 @@ type Stats = {
   updatedAt: string;
 };
 
-function pct(n: number) {
-  return `${(n * 100).toFixed(1)}%`;
+/** Persen terhadap total — tanpa toFixed / Math.round */
+function shareOfTotal(part: number, total: number): string {
+  if (total <= 0) return "0%";
+  return `${(part * 100) / total}%`;
+}
+
+/** Lebar bar = bagian dari total (bukan dari bar terpanjang) */
+function barWidthStyle(part: number, total: number): CSSProperties {
+  if (total <= 0 || part <= 0) return { width: "0%" };
+  return { width: `calc(${part} / ${total} * 100%)` };
 }
 
 function BarChart({ stats }: { stats: Stats }) {
-  /** Siap dipinjam = total − masih dibawa − terlambat (gabungan siap + sudah kembali) */
-  const siapDipinjam = Math.max(
-    0,
-    stats.total - stats.outOnly - stats.overdue
-  );
+  const total = stats.total;
+  /** Siap dipinjam = total − masih dibawa − terlambat */
+  const siapDipinjam = Math.max(0, total - stats.outOnly - stats.overdue);
   const bars = [
     {
       label: "Siap dipinjam",
@@ -67,8 +78,7 @@ function BarChart({ stats }: { stats: Stats }) {
     },
   ];
   const sum = bars.reduce((a, b) => a + b.value, 0);
-  const max = Math.max(1, ...bars.map((b) => b.value));
-  const ok = sum === stats.total;
+  const ok = sum === total;
 
   return (
     <div className="rounded-lg border-2 border-slate-300 bg-white p-4">
@@ -76,26 +86,29 @@ function BarChart({ stats }: { stats: Stats }) {
         Status kunci (bar chart)
       </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Siap dipinjam = total − masih dibawa − terlambat. Terlambat tidak masuk
-        masih dibawa.
+        Lebar = jumlah / total kunci (bukan 100% terhadap bar terbesar).
       </p>
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
           <li key={b.label}>
-            <div className="mb-1 flex justify-between text-sm font-semibold">
+            <div className="mb-1 flex justify-between gap-2 text-sm font-semibold">
               <span className={b.text}>{b.label}</span>
-              <span className="font-mono tabular-nums">{b.value}</span>
+              <span className="shrink-0 font-mono tabular-nums">
+                {b.value}
+                {total > 0 ? (
+                  <span className="ml-2 font-normal text-slate-600">
+                    ({shareOfTotal(b.value, total)})
+                  </span>
+                ) : null}
+              </span>
             </div>
             <div className="h-8 overflow-hidden rounded-md bg-slate-200">
               <div
-                className={`flex h-full items-center ${b.color} transition-all duration-500`}
-                style={{
-                  width: `${(b.value / max) * 100}%`,
-                  minWidth: b.value ? "2rem" : 0,
-                }}
+                className={`flex h-full min-w-0 items-center ${b.color} transition-[width] duration-500`}
+                style={barWidthStyle(b.value, total)}
               >
                 {b.value > 0 && (
-                  <span className="px-2 text-sm font-bold text-white">
+                  <span className="truncate px-2 text-sm font-bold text-white">
                     {b.value}
                   </span>
                 )}
@@ -111,7 +124,7 @@ function BarChart({ stats }: { stats: Stats }) {
             : "mt-3 text-sm font-bold text-rose-800"
         }
       >
-        Jumlah bar: {sum} / total {stats.total}
+        Jumlah bar: {sum} / total {total}
         {ok ? " ✓" : " — tidak cocok, cek data"}
       </p>
     </div>
@@ -216,8 +229,13 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
               ? Math.max(0, stats.total - stats.outOnly - stats.overdue)
               : "—"}
           </p>
-          <p className="mt-1 font-mono text-sm font-semibold">
-            {stats ? pct(stats.returnedPct) : "—"}
+          <p className="mt-1 break-all font-mono text-sm font-semibold">
+            {stats
+              ? shareOfTotal(
+                  Math.max(0, stats.total - stats.outOnly - stats.overdue),
+                  stats.total
+                )
+              : "—"}
           </p>
         </div>
         <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-4 text-amber-950 sm:px-4 sm:py-5">
@@ -227,8 +245,8 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.outOnly ?? "—"}
           </p>
-          <p className="mt-1 text-xs text-amber-950/80">
-            Belum lewat batas terlambat
+          <p className="mt-1 break-all font-mono text-sm font-semibold">
+            {stats ? shareOfTotal(stats.outOnly, stats.total) : "—"}
           </p>
         </div>
         <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-4 text-rose-950 sm:px-4 sm:py-5">
@@ -237,6 +255,9 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
           </p>
           <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
             {stats?.overdue ?? "—"}
+          </p>
+          <p className="mt-1 break-all font-mono text-sm font-semibold">
+            {stats ? shareOfTotal(stats.overdue, stats.total) : "—"}
           </p>
         </div>
       </div>
