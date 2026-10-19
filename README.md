@@ -5,14 +5,9 @@ Platform operasional **divisi Security** — PT. Indonesia Smelting Technology (
 | | |
 | --- | --- |
 | GitHub | https://github.com/rend1507/ist-security |
-| Klien folder | `ikn` (rumah kode saja) |
 | Cloudflare | **umrplku** |
 | Worker | https://ist-security.umrplku.workers.dev |
 | D1 | `ist-security` (`a4c49041-ace2-4b5b-8ae5-29726a6893a4`) |
-| Diskusi | `Diskusi/ist-security/` |
-| Skill | `.cursor/skills/ist-security/` |
-
-Bukan Unigama/SISKA, bukan CloQout. Chat Diskusi IST = khusus proyek ini.
 
 ## Stack
 
@@ -36,7 +31,7 @@ Bukan Unigama/SISKA, bukan CloQout. Chat Diskusi IST = khusus proyek ini.
 npm run env:sync
 npm run db:migrate:local   # atau :remote
 npm run preview            # OpenNext + D1 lokal
-npm run deploy             # umrplku saja
+npm run deploy             # Worker umrplku
 ```
 
 ## Demo
@@ -50,8 +45,7 @@ npm run deploy             # umrplku saja
 
 Seed kunci: **SEC1–SEC46** (dari Excel).
 
-## Jangan
+## Catatan
 
-- Akun **DiTi**
-- Deploy / edit proyek lain dari konteks IST tanpa izin
-- Commit `.env` / `.dev.vars` / secret
+- Pakai akun Cloudflare yang sudah diverifikasi untuk proyek ini.
+- Jangan commit `.env` / `.dev.vars` / secret.

@@ -45,7 +45,7 @@ echo "==> Cek akun Wrangler"
 WHOAMI="$(npx wrangler whoami 2>&1 || true)"
 echo "$WHOAMI"
 if echo "$WHOAMI" | grep -qi 'deskteam360'; then
-  echo "ERROR: Akun DiTi terdeteksi. Stop."
+  echo "ERROR: Akun Cloudflare tidak diizinkan untuk proyek ini. Stop."
   exit 1
 fi
 if ! echo "$WHOAMI" | grep -qi 'umrplku'; then
