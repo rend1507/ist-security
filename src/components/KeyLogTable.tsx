@@ -228,6 +228,12 @@ export function KeyLogTable({
 
                 const overdue = r.status === "overdue";
                 const out = r.status === "out";
+                /** Sudah kembali tapi lama pinjam lewat batas → kolom Lama merah */
+                const returnedOverLimit =
+                  r.status === "returned" &&
+                  Boolean(r.take_out) &&
+                  durationMs(r.take_out!, r.give_back) >=
+                    r.overdue_minutes * 60_000;
                 const baseCell = overdue
                   ? "bg-rose-200"
                   : out
@@ -237,7 +243,9 @@ export function KeyLogTable({
                   ? "bg-amber-300"
                   : out
                     ? "bg-amber-200"
-                    : "bg-white";
+                    : returnedOverLimit
+                      ? "bg-rose-300"
+                      : "bg-white";
 
                 return (
                   <tr key={r.key_id} className="border-t border-slate-300/80">

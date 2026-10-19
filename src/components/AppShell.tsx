@@ -191,10 +191,16 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
 
       {pinOpen && (
         <Modal title="Ganti PIN" onClose={() => setPinOpen(false)}>
-          <p className="mb-3 text-sm text-slate-600">
-            PIN 6 angka diminta saat pinjam, kembalikan, atau ubah jam. Login
-            memakai password terpisah.
-          </p>
+          {user.role === "superadmin" ? (
+            <p className="mb-3 text-base text-slate-700">
+              PIN dipakai saat pinjam / kembalikan / ubah jam. Login pakai
+              password terpisah.
+            </p>
+          ) : (
+            <p className="mb-3 text-base text-slate-700">
+              Ganti PIN 6 angka Anda.
+            </p>
+          )}
           <ChangePinForm isSuperadmin={user.role === "superadmin"} />
         </Modal>
       )}

@@ -10,10 +10,12 @@ export function KeysWorkspace({
   rows,
   canTransact,
   error,
+  isSuperadmin = false,
 }: {
   rows: KeyLogView[];
   canTransact: boolean;
   error: string | null;
+  isSuperadmin?: boolean;
 }) {
   const [openGiveCode, setOpenGiveCode] = useState<string | null>(null);
 
@@ -27,8 +29,7 @@ export function KeysWorkspace({
           />
         ) : (
           <p className="rounded-md border-2 border-slate-300 bg-slate-50 px-3 py-2 text-base text-slate-700">
-            Akun Admin Data hanya mengelola daftar. Pinjam / kembalikan kunci
-            dilakukan petugas, Kepala, atau Super Admin.
+            Akun ini hanya kelola daftar kunci. Pinjam / kembalikan lewat petugas.
           </p>
         )}
         <div className="flex justify-end">
@@ -36,10 +37,16 @@ export function KeysWorkspace({
         </div>
       </div>
 
-      <p className="text-sm text-slate-600">
-        Jam dari perangkat. Kunci yang masih dibawa: tombol kembalikan. Ubah jam
-        hanya setelah sudah dikembalikan (maks. 4×).
-      </p>
+      {canTransact && (
+        <ul className="list-inside list-disc space-y-1 text-base text-slate-700">
+          <li>Jam diambil dari perangkat</li>
+          <li>Masih dibawa → tekan tombol kembalikan</li>
+          <li>Ubah jam hanya setelah dikembalikan (maks. 4×)</li>
+          {isSuperadmin && (
+            <li>Kolom Lama merah = lewat batas terlambat (meski sudah kembali)</li>
+          )}
+        </ul>
+      )}
 
       {error && (
         <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">

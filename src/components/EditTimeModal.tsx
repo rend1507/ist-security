@@ -82,8 +82,8 @@ export function EditTimeModal({
 
   return (
     <Modal title={`Ubah jam — ${code}`} onClose={onClose}>
-      <p className="mb-3 text-sm text-slate-600">
-        Bisa diubah {remaining}× lagi (maks. {MAX_EDITS}×).
+      <p className="mb-3 text-base text-slate-700">
+        Sisa ubah: {remaining}× (maks. {MAX_EDITS}×)
       </p>
 
       {remaining <= 0 ? (

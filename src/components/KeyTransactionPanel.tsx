@@ -265,9 +265,7 @@ export function KeyTransactionPanel({
           }}
           wide
         >
-          <p className="mb-3 text-xs text-slate-500">
-            Jam dari perangkat (bisa diubah nanti, maks. 4 kali).
-          </p>
+          <p className="mb-3 text-base text-slate-600">Isi data, lalu PIN 6 angka.</p>
           <div className="space-y-3">
             <div>
               <label className="block text-sm text-slate-700">

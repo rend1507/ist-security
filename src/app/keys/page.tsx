@@ -25,6 +25,7 @@ export default async function KeysPage() {
         rows={rows}
         canTransact={canTransact(user.role)}
         error={error}
+        isSuperadmin={user.role === "superadmin"}
       />
     </AppShell>
   );

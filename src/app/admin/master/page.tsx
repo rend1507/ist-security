@@ -15,11 +15,11 @@ export default async function AdminMasterPage() {
 
   return (
     <AppShell title="Data Master" active="master" user={user}>
-      <p className="mb-4 max-w-2xl text-sm text-slate-600">
-        Kelola daftar jenis kunci dan nama peminjam. Tambah / ubah lewat popup.
-        Jenis kunci disimpan huruf kecil. Nonaktifkan jika tidak dipakai lagi
-        (riwayat pinjam tetap tersimpan).
-      </p>
+      <ul className="mb-4 list-inside list-disc space-y-1 text-base text-slate-700">
+        <li>Tambah / ubah lewat popup</li>
+        <li>Jenis kunci huruf kecil</li>
+        <li>Nonaktifkan = hilang dari daftar (riwayat tetap ada)</li>
+      </ul>
       <DataMasterPanel canSetOverdue={canSetOverdue(user.role)} />
     </AppShell>
   );

@@ -48,7 +48,13 @@ function barWidthStyle(part: number, total: number): CSSProperties {
   return { width: `calc(${part} / ${total} * 100%)` };
 }
 
-function BarChart({ stats }: { stats: Stats }) {
+function BarChart({
+  stats,
+  showDebug,
+}: {
+  stats: Stats;
+  showDebug?: boolean;
+}) {
   const total = stats.total;
   const siapDipinjam = Math.max(0, total - stats.outOnly - stats.overdue);
   const bars = [
@@ -76,12 +82,7 @@ function BarChart({ stats }: { stats: Stats }) {
 
   return (
     <div className="rounded-lg border-2 border-slate-300 bg-white p-4">
-      <h2 className="text-base font-bold text-slate-900">
-        Status kunci (bar chart)
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Lebar bar = jumlah / total (akurat). Angka persen di samping dibulatkan.
-      </p>
+      <h2 className="text-base font-bold text-slate-900">Status kunci</h2>
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
           <li key={b.label}>
@@ -111,23 +112,31 @@ function BarChart({ stats }: { stats: Stats }) {
           </li>
         ))}
       </ul>
-      <p
-        className={
-          ok
-            ? "mt-3 text-sm font-semibold text-slate-700"
-            : "mt-3 text-sm font-bold text-rose-800"
-        }
-      >
-        Jumlah bar: {sum} / total {total}
-        {ok ? " ✓" : " — tidak cocok, cek data"}
-      </p>
+      {showDebug && (
+        <p
+          className={
+            ok
+              ? "mt-3 text-sm font-semibold text-slate-700"
+              : "mt-3 text-sm font-bold text-rose-800"
+          }
+        >
+          Cek jumlah: {sum} / {total}
+          {ok ? " ✓" : " — tidak cocok"}
+        </p>
+      )}
     </div>
   );
 }
 
 const POLL_MS = 60_000;
 
-export function DashboardPanel({ initial }: { initial: Stats | null }) {
+export function DashboardPanel({
+  initial,
+  isSuperadmin = false,
+}: {
+  initial: Stats | null;
+  isSuperadmin?: boolean;
+}) {
   const [stats, setStats] = useState<Stats | null>(initial);
   const [error, setError] = useState<string | null>(null);
 
@@ -180,24 +189,28 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-base text-slate-700">
-          Gambaran kunci. Batas terlambat default:{" "}
-          <span className="font-mono font-bold">
-            {stats?.defaultOverdueMinutes ?? 5} menit
-          </span>
+        <div className="max-w-2xl text-base text-slate-700">
           {stats && stats.overdue > 0 && (
-            <span className="ml-2 rounded bg-rose-200 px-2 py-1 text-sm font-bold text-rose-900">
-              {stats.overdue} terlambat
-            </span>
+            <p className="mb-1">
+              <span className="rounded bg-rose-200 px-2 py-1 text-sm font-bold text-rose-900">
+                {stats.overdue} terlambat
+              </span>
+            </p>
           )}
-          <span className="mt-1 block text-sm text-slate-500">
-            Data diperbarui:{" "}
-            <span className="font-mono font-semibold text-slate-800">
-              {updatedLabel}
-            </span>{" "}
-            WIB · auto 60 detik
-          </span>
-        </p>
+          {isSuperadmin && (
+            <ul className="list-inside list-disc text-sm text-slate-600">
+              <li>
+                Batas terlambat default:{" "}
+                <span className="font-mono font-bold">
+                  {stats?.defaultOverdueMinutes ?? 5} menit
+                </span>
+              </li>
+              <li>
+                Data: {updatedLabel} WIB · refresh otomatis 60 detik
+              </li>
+            </ul>
+          )}
+        </div>
         <OfflineSyncBadge />
       </div>
 
@@ -251,7 +264,7 @@ export function DashboardPanel({ initial }: { initial: Stats | null }) {
         </div>
       </div>
 
-      {stats && <BarChart stats={stats} />}
+      {stats && <BarChart stats={stats} showDebug={isSuperadmin} />}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <section className="rounded-lg border-2 border-slate-300 bg-white p-4">

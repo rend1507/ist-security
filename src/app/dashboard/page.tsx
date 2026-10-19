@@ -17,7 +17,10 @@ export default async function DashboardPage() {
 
   return (
     <AppShell title="Ringkasan harian" active="dashboard" user={user}>
-      <DashboardPanel initial={initial} />
+      <DashboardPanel
+        initial={initial}
+        isSuperadmin={user.role === "superadmin"}
+      />
     </AppShell>
   );
 }

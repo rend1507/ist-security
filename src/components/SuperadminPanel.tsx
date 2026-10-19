@@ -177,8 +177,7 @@ export function SuperadminPanel({
       {tab === "overdue" ? (
         <div className="space-y-3">
           <p className="text-base text-slate-700">
-            Menit default sebelum kunci yang masih dibawa dianggap terlambat
-            (bisa diganti per kunci di Data Master oleh Super Admin).
+            Menit default sebelum status jadi terlambat.
           </p>
           <label className="block text-base font-semibold">
             Menit
@@ -201,10 +200,10 @@ export function SuperadminPanel({
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
-            Super Admin tidak bisa ditambahkan lewat aplikasi. Anda juga tidak
-            bisa menonaktifkan akun Super Admin (termasuk akun sendiri).
-          </p>
+          <ul className="list-inside list-disc space-y-1 text-base text-amber-950">
+            <li>Tidak bisa menambah Super Admin lewat aplikasi</li>
+            <li>Tidak bisa menonaktifkan akun Super Admin (termasuk sendiri)</li>
+          </ul>
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="block text-base font-semibold">
               ID
@@ -248,11 +247,15 @@ export function SuperadminPanel({
             <label className="block text-base font-semibold">
               PIN awal (6 angka)
               <input
+                type="password"
+                inputMode="numeric"
+                autoComplete="new-password"
+                maxLength={6}
                 value={uPin}
                 onChange={(e) =>
                   setUPin(e.target.value.replace(/\D/g, "").slice(0, 6))
                 }
-                className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2 font-mono text-base"
+                className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2 font-mono text-base tracking-widest"
               />
             </label>
           </div>
