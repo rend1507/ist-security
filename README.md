@@ -22,8 +22,9 @@ Platform operasional **divisi Security** — PT. Indonesia Smelting Technology (
 | `/login` | Masuk (password) |
 | `/dashboard` | Ringkasan harian |
 | `/keys` | Buku kunci · pinjam/kembali · scan · ubah jam |
+| `/log-kunci` | Riwayat pinjam/kembali per tanggal |
 | `/admin/master` | Data Master kunci + peminjam (form popup) |
-| Sidebar | Ganti PIN / Pengaturan Super Admin (popup) |
+| Sidebar | Ganti PIN / Pengaturan (batas terlambat; Super Admin + akun) |
 
 ## Dev / deploy
 

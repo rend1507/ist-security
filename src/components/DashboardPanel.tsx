@@ -172,16 +172,6 @@ export function DashboardPanel({
     };
   }, [load]);
 
-  const updatedLabel = stats?.updatedAt
-    ? new Date(stats.updatedAt).toLocaleTimeString("id-ID", {
-        timeZone: "Asia/Jakarta",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      })
-    : "—";
-
   const siap = stats
     ? Math.max(0, stats.total - stats.outOnly - stats.overdue)
     : 0;
@@ -189,29 +179,14 @@ export function DashboardPanel({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="max-w-2xl text-base text-slate-700">
+        <div className="flex flex-wrap items-center gap-2">
           {stats && stats.overdue > 0 && (
-            <p className="mb-1">
-              <span className="rounded bg-rose-200 px-2 py-1 text-sm font-bold text-rose-900">
-                {stats.overdue} terlambat
-              </span>
-            </p>
+            <span className="rounded bg-rose-200 px-2 py-1 text-sm font-bold text-rose-900">
+              {stats.overdue} terlambat
+            </span>
           )}
-          {isSuperadmin && (
-            <ul className="list-inside list-disc text-sm text-slate-600">
-              <li>
-                Batas terlambat default:{" "}
-                <span className="font-mono font-bold">
-                  {stats?.defaultOverdueMinutes ?? 5} menit
-                </span>
-              </li>
-              <li>
-                Data: {updatedLabel} WIB · refresh otomatis 60 detik
-              </li>
-            </ul>
-          )}
+          <OfflineSyncBadge />
         </div>
-        <OfflineSyncBadge />
       </div>
 
       {error && (

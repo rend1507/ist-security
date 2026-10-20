@@ -9,6 +9,7 @@ import {
   IconChart,
   IconDatabase,
   IconKey,
+  IconList,
   IconLock,
   IconSettings,
 } from "@/components/Icons";
@@ -29,7 +30,7 @@ import {
   toolbarGroup,
 } from "@/lib/ui";
 
-type NavKey = "dashboard" | "keys" | "master";
+type NavKey = "dashboard" | "keys" | "logs" | "master";
 
 type AppShellProps = {
   title: string;
@@ -41,17 +42,21 @@ type AppShellProps = {
 const NAV_ICONS: Record<NavKey, React.ReactNode> = {
   dashboard: <IconChart />,
   keys: <IconKey />,
+  logs: <IconList />,
   master: <IconDatabase />,
 };
 
 export function AppShell({ title, children, active, user }: AppShellProps) {
   const [pinOpen, setPinOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const showSettings = canManageUsers(user.role) || canSetOverdue(user.role);
+  const canUsers = canManageUsers(user.role);
+  const canOverdue = canSetOverdue(user.role);
+  const showSettings = canUsers || canOverdue;
 
   const nav: { href: string; label: string; key: NavKey }[] = [
     { href: "/dashboard", label: "Ringkasan", key: "dashboard" },
     { href: "/keys", label: "Buku kunci", key: "keys" },
+    { href: "/log-kunci", label: "Log kunci", key: "logs" },
   ];
   if (canManageMaster(user.role)) {
     nav.push({ href: "/admin/master", label: "Data Master", key: "master" });
@@ -191,27 +196,24 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
 
       {pinOpen && (
         <Modal title="Ganti PIN" onClose={() => setPinOpen(false)}>
-          {user.role === "superadmin" ? (
-            <p className="mb-3 text-base text-slate-700">
-              PIN dipakai saat pinjam / kembalikan / ubah jam. Login pakai
-              password terpisah.
-            </p>
-          ) : (
-            <p className="mb-3 text-base text-slate-700">
-              Ganti PIN 6 angka Anda.
-            </p>
-          )}
+          <p className="mb-3 text-base text-slate-700">
+            Ganti PIN 6 angka Anda. PIN dipakai saat pinjam / kembalikan / ubah
+            jam.
+          </p>
           <ChangePinForm isSuperadmin={user.role === "superadmin"} />
         </Modal>
       )}
 
       {settingsOpen && (
         <Modal
-          title="Pengaturan Super Admin"
+          title={canUsers ? "Pengaturan Super Admin" : "Batas terlambat"}
           onClose={() => setSettingsOpen(false)}
-          wide
+          wide={canUsers}
         >
-          <SuperadminPanel currentUserId={user.id} />
+          <SuperadminPanel
+            currentUserId={user.id}
+            showUsersTab={canUsers}
+          />
         </Modal>
       )}
     </div>

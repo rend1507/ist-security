@@ -34,6 +34,7 @@ export function canTransact(role: string): boolean {
   return (
     role === "superadmin" ||
     role === "kepala_security" ||
+    role === "admin" ||
     role === "security"
   );
 }
@@ -47,11 +48,12 @@ export function canManageMaster(role: string): boolean {
   );
 }
 
-/** Ganti PIN sendiri — Admin Data tidak (hanya master) */
+/** Ganti PIN sendiri */
 export function canChangeOwnPin(role: string): boolean {
   return (
     role === "superadmin" ||
     role === "kepala_security" ||
+    role === "admin" ||
     role === "security"
   );
 }
@@ -60,11 +62,12 @@ export function canChangeAnyPin(role: string): boolean {
   return role === "superadmin";
 }
 
-/** Atur overdue global / per kunci di pengaturan — Super Admin */
+/** Atur overdue global (popup) / per kunci — Super Admin & Admin */
 export function canSetOverdue(role: string): boolean {
-  return role === "superadmin";
+  return role === "superadmin" || role === "admin";
 }
 
+/** Kelola akun petugas — hanya Super Admin */
 export function canManageUsers(role: string): boolean {
   return role === "superadmin";
 }

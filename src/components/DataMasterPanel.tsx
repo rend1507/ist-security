@@ -312,6 +312,12 @@ export function DataMasterPanel({
         </button>
       </div>
 
+      <ul className="list-inside list-disc space-y-1 text-base text-slate-700">
+        <li>Tambah / ubah lewat popup</li>
+        <li>Jenis kunci huruf kecil</li>
+        <li>Nonaktifkan = hilang dari daftar (riwayat tetap ada)</li>
+      </ul>
+
       {error && (
         <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
           {error}

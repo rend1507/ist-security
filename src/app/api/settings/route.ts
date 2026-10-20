@@ -25,7 +25,7 @@ export async function PATCH(req: Request) {
   const user = await requireUser();
   if (user instanceof Response) return user;
   if (!canSetOverdue(user.role)) {
-    return jsonErr("Hanya Super Admin yang mengatur batas terlambat.", 403);
+    return jsonErr("Akun ini tidak boleh mengatur batas terlambat.", 403);
   }
 
   try {

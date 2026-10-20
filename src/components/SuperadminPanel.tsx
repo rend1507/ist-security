@@ -18,8 +18,11 @@ type UserRow = {
 
 export function SuperadminPanel({
   currentUserId,
+  showUsersTab = true,
 }: {
   currentUserId: number;
+  /** false = hanya batas terlambat (Admin); true = + akun petugas (Super Admin) */
+  showUsersTab?: boolean;
 }) {
   const [tab, setTab] = useState<"overdue" | "users">("overdue");
   const [minutes, setMinutes] = useState("5");
@@ -34,6 +37,8 @@ export function SuperadminPanel({
   const [uPass, setUPass] = useState("");
   const [uPin, setUPin] = useState("123456");
 
+  const activeTab = showUsersTab ? tab : "overdue";
+
   const load = useCallback(async () => {
     setError(null);
     try {
@@ -45,7 +50,7 @@ export function SuperadminPanel({
       if (sj.ok && sj.data) {
         setMinutes(String(sj.data.default_overdue_minutes));
       }
-      if (tab === "users") {
+      if (showUsersTab && activeTab === "users") {
         const res = await fetch("/api/users");
         const json = (await res.json()) as {
           ok: boolean;
@@ -58,7 +63,7 @@ export function SuperadminPanel({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal memuat");
     }
-  }, [tab]);
+  }, [activeTab, showUsersTab]);
 
   useEffect(() => {
     void load();
@@ -146,22 +151,24 @@ export function SuperadminPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 rounded-lg border border-slate-300 bg-slate-100 p-2">
-        <button
-          type="button"
-          onClick={() => setTab("overdue")}
-          className={tab === "overdue" ? pillActive : pillIdle}
-        >
-          Batas terlambat
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("users")}
-          className={tab === "users" ? pillActive : pillIdle}
-        >
-          Akun petugas
-        </button>
-      </div>
+      {showUsersTab && (
+        <div className="flex flex-wrap gap-2 rounded-lg border border-slate-300 bg-slate-100 p-2">
+          <button
+            type="button"
+            onClick={() => setTab("overdue")}
+            className={activeTab === "overdue" ? pillActive : pillIdle}
+          >
+            Batas terlambat
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("users")}
+            className={activeTab === "users" ? pillActive : pillIdle}
+          >
+            Akun petugas
+          </button>
+        </div>
+      )}
 
       {error && (
         <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
@@ -174,7 +181,7 @@ export function SuperadminPanel({
         </p>
       )}
 
-      {tab === "overdue" ? (
+      {activeTab === "overdue" ? (
         <div className="space-y-3">
           <p className="text-base text-slate-700">
             Menit default sebelum status jadi terlambat.

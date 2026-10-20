@@ -24,9 +24,9 @@ function formatWib(ts: number) {
   return { hari, tanggal, jam };
 }
 
-/** Update tiap 15 detik — cukup untuk jam header, hemat CPU. */
+/** Update tiap detik — jam header realtime. */
 export function HeaderClock() {
-  const now = useSharedNow(15_000, true);
+  const now = useSharedNow(1_000, true);
   const { hari, tanggal, jam } = formatWib(now);
 
   return (

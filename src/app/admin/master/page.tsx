@@ -15,11 +15,6 @@ export default async function AdminMasterPage() {
 
   return (
     <AppShell title="Data Master" active="master" user={user}>
-      <ul className="mb-4 list-inside list-disc space-y-1 text-base text-slate-700">
-        <li>Tambah / ubah lewat popup</li>
-        <li>Jenis kunci huruf kecil</li>
-        <li>Nonaktifkan = hilang dari daftar (riwayat tetap ada)</li>
-      </ul>
       <DataMasterPanel canSetOverdue={canSetOverdue(user.role)} />
     </AppShell>
   );
