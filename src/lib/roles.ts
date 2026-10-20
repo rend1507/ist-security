@@ -69,11 +69,11 @@ export function canManageUsers(role: string): boolean {
   return role === "superadmin";
 }
 
+/** Akun uji di layar Login — Super Admin sengaja tidak ditampilkan. */
 export const DEMO_ACCOUNTS = [
   { id: "sec01", role: "Petugas Security" },
   { id: "kepala", role: "Kepala Security" },
   { id: "admin", role: "Admin Data" },
-  { id: "superadmin", role: "Super Admin" },
 ] as const;
 
 export const DEMO_PASSWORD = "ist2026";

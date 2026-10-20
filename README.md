@@ -40,8 +40,9 @@ npm run deploy             # Worker umrplku
 | --- | --- | --- | --- |
 | `sec01` | Petugas | `ist2026` | `123456` |
 | `kepala` | Kepala Security | `ist2026` | `123456` |
-| `superadmin` | Super Admin | `ist2026` | `123456` |
 | `admin` | Admin Data | `ist2026` | `123456` |
+
+Super Admin tetap di database (login manual); tidak ditampilkan di daftar akun uji.
 
 Seed kunci: **SEC1–SEC46** (dari Excel).
 

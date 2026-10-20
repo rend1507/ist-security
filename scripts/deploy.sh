@@ -74,4 +74,4 @@ printf '%s' "${SESSION_SECRET}" | npx wrangler secret put SESSION_SECRET
 
 echo ""
 echo "Selesai. App: https://${WORKER_NAME}.umrplku.workers.dev"
-echo "Demo: password ist2026 · PIN 123456 (superadmin / kepala / admin / sec01)"
+echo "Demo: password ist2026 · PIN 123456 (kepala / admin / sec01). Super Admin: login manual (bukan password demo)."
