@@ -21,10 +21,11 @@ Platform operasional **divisi Security** — PT. Indonesia Smelting Technology (
 | --- | --- |
 | `/login` | Masuk (password) |
 | `/dashboard` | Ringkasan harian |
-| `/keys` | Buku kunci · pinjam/kembali · scan · ubah jam · lihat QR |
-| `/log-kunci` | Riwayat pinjam/kembali per tanggal |
-| `/daftar-kunci` | Registrasi kunci + QR/barcode (bukan Petugas) |
-| `/admin/master` | Data Master peminjam |
+| `/dashboard` | Dashboard (status + belum kembali realtime) |
+| `/keys` | Buku kunci · pinjam/kembali · scan QR · ubah jam · lihat QR |
+| `/log-kunci` | Riwayat pinjam/kembali per tanggal (bisa sortir) |
+| `/daftar-kunci` | Registrasi kunci + QR (bukan Petugas) |
+| `/admin/master` | Data peminjam |
 | Sidebar | Ganti PIN / Pengaturan (batas terlambat; Super Admin + akun) |
 
 ## Dev / deploy

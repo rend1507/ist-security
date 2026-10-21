@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
+import { findKeyByScanOrCode } from "@/lib/key-lookup";
 import { listKeyLogViews } from "@/lib/keys";
 import { canManageMaster, canSetOverdue } from "@/lib/roles";
 import { generateScanToken } from "@/lib/scan-token";
@@ -11,8 +12,21 @@ export async function GET(req: Request) {
   const user = await requireUser();
   if (user instanceof Response) return user;
 
-  const mode = new URL(req.url).searchParams.get("mode");
+  const url = new URL(req.url);
+  const mode = url.searchParams.get("mode");
   try {
+    if (mode === "resolve") {
+      const q = url.searchParams.get("q")?.trim() ?? "";
+      if (!q) return jsonErr("Kode scan kosong.", 400);
+      const key = await findKeyByScanOrCode(q);
+      if (!key) return jsonErr("Kunci tidak dikenali dari QR.", 404);
+      return jsonOk({
+        id: key.id,
+        code: key.code,
+        barcode: key.barcode,
+        status: key.status,
+      });
+    }
     if (mode === "master") {
       if (!canManageMaster(user.role)) {
         return jsonErr("Akun ini tidak boleh mengelola daftar kunci.", 403);

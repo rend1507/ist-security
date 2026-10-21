@@ -71,6 +71,9 @@ export function KeyTransactionPanel({
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanHint, setScanHint] = useState<string | null>(null);
+  /** Setelah scan QR: kunci terdeteksi, input manual disembunyikan. */
+  const [detectedCode, setDetectedCode] = useState<string | null>(null);
+  const [fromScan, setFromScan] = useState(false);
 
   const stopScan = useCallback(() => {
     if (scanTimer.current != null) {
@@ -102,6 +105,8 @@ export function KeyTransactionPanel({
     setMode(m);
     setOpen(true);
     setKeyCode(prefillCode ? normalizeKeyCode(prefillCode) : "");
+    setDetectedCode(prefillCode ? normalizeKeyCode(prefillCode) : null);
+    setFromScan(false);
     setPin("");
     setMsg(null);
     setError(null);
@@ -112,6 +117,12 @@ export function KeyTransactionPanel({
     stopScan();
   }
 
+  function clearScanLock() {
+    setFromScan(false);
+    setDetectedCode(null);
+    setKeyCode("");
+  }
+
   useEffect(() => {
     if (!openGiveCode) return;
     start("give", openGiveCode);
@@ -119,13 +130,40 @@ export function KeyTransactionPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- trigger once per code
   }, [openGiveCode]);
 
+  async function applyScannedRaw(raw: string) {
+    const token = normalizeKeyCode(raw);
+    setKeyCode(token);
+    try {
+      const res = await fetch(
+        `/api/keys?mode=resolve&q=${encodeURIComponent(token)}`
+      );
+      const json = (await res.json()) as {
+        ok: boolean;
+        data?: { code: string };
+        error?: string;
+      };
+      if (!json.ok || !json.data) {
+        setError(json.error || "QR tidak dikenali sebagai kunci.");
+        setFromScan(false);
+        setDetectedCode(null);
+        return;
+      }
+      setDetectedCode(json.data.code);
+      setFromScan(true);
+      setMsg(`Kunci ${json.data.code} terdeteksi dari QR.`);
+      setError(null);
+    } catch {
+      setError("Gagal mengenali QR. Coba lagi atau isi kode manual.");
+    }
+  }
+
   async function startScan() {
     setError(null);
     setScanHint(null);
     const BD = getBarcodeDetector();
     if (!BD) {
       setScanHint(
-        "Peramban ini tidak mendukung scan kamera. Isi kode kunci secara manual."
+        "Peramban ini tidak mendukung scan QR. Isi kode kunci secara manual."
       );
       return;
     }
@@ -150,7 +188,7 @@ export function KeyTransactionPanel({
       video.srcObject = stream;
       await video.play();
       const detector = new BD({
-        formats: ["qr_code", "code_128", "code_39", "ean_13"],
+        formats: ["qr_code"],
       });
       scanTimer.current = window.setInterval(async () => {
         if (!videoRef.current || videoRef.current.readyState < 2) return;
@@ -158,9 +196,8 @@ export function KeyTransactionPanel({
           const codes = await detector.detect(videoRef.current);
           const raw = codes[0]?.rawValue;
           if (raw) {
-            setKeyCode(normalizeKeyCode(raw));
-            setMsg("Barcode terbaca. Lanjutkan isi form.");
             stopScan();
+            void applyScannedRaw(raw);
           }
         } catch {
           /* frame skip */
@@ -269,38 +306,56 @@ export function KeyTransactionPanel({
           <p className="mb-3 text-base text-slate-600">Isi data, lalu PIN 6 angka.</p>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm text-slate-700">
-                Kode kunci (manual) atau hasil scan
-                <input
-                  value={keyCode}
-                  onChange={(e) =>
-                    setKeyCode(normalizeKeyCode(e.target.value))
-                  }
-                  placeholder="SEC1 atau scan QR/barcode"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm outline-none ring-blue-600 focus:ring-2"
-                />
-              </label>
+              {fromScan && detectedCode ? (
+                <div className="rounded-md border-2 border-emerald-400 bg-emerald-50 px-3 py-3">
+                  <p className="text-sm font-semibold text-emerald-900">
+                    Kunci terdeteksi (QR)
+                  </p>
+                  <p className="mt-1 font-mono text-xl font-bold text-emerald-950">
+                    {detectedCode}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearScanLock}
+                    className="mt-2 text-sm font-semibold text-blue-800 underline"
+                  >
+                    Batalkan scan — isi kode manual
+                  </button>
+                </div>
+              ) : (
+                <label className="block text-sm font-semibold text-slate-800">
+                  Kode kunci (manual)
+                  <input
+                    value={keyCode}
+                    onChange={(e) =>
+                      setKeyCode(normalizeKeyCode(e.target.value))
+                    }
+                    placeholder="Contoh: SEC1"
+                    className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 font-mono text-base outline-none ring-blue-600 focus:ring-2"
+                  />
+                </label>
+              )}
               <div className="mt-2 flex flex-wrap gap-2">
                 {!scanning ? (
                   <button
                     type="button"
                     onClick={startScan}
-                    className="rounded-md border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-slate-100"
+                    className="rounded-md border-2 border-slate-400 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
                   >
-                    Scan barcode
+                    Scan QR
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={stopScan}
-                    className="rounded-md border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-800"
+                    className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800"
                   >
                     Hentikan kamera
                   </button>
                 )}
               </div>
               {scanHint && (
-                <p className="mt-2 text-xs text-amber-800">{scanHint}</p>
+                <p className="mt-2 text-sm text-amber-900">{scanHint}</p>
               )}
               {scanning && (
                 <video

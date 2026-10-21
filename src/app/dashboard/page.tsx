@@ -4,7 +4,7 @@ import { getDashboardStats } from "@/lib/keys";
 import { requirePageUser } from "@/lib/require-page-user";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Ringkasan" };
+export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const user = await requirePageUser();
@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <AppShell title="Ringkasan harian" active="dashboard" user={user}>
+    <AppShell title="Dashboard" active="dashboard" user={user}>
       <DashboardPanel
         initial={initial}
         isSuperadmin={user.role === "superadmin"}

@@ -28,6 +28,8 @@ export function DaftarKunciPanel({
   const [keys, setKeys] = useState<KeyRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formMsg, setFormMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [codesInfo, setCodesInfo] = useState<KeyCodesInfo | null>(null);
@@ -68,6 +70,8 @@ export function DaftarKunciPanel({
     resetForm();
     setMsg(null);
     setError(null);
+    setFormError(null);
+    setFormMsg(null);
     setFormOpen(true);
   }
 
@@ -80,6 +84,8 @@ export function DaftarKunciPanel({
     );
     setMsg(null);
     setError(null);
+    setFormError(null);
+    setFormMsg(null);
     setFormOpen(true);
   }
 
@@ -87,6 +93,8 @@ export function DaftarKunciPanel({
     setLoading(true);
     setError(null);
     setMsg(null);
+    setFormError(null);
+    setFormMsg(null);
     try {
       const payload: Record<string, unknown> = {
         code: kCode,
@@ -109,24 +117,30 @@ export function DaftarKunciPanel({
         data?: { code: string; jenis: string; barcode: string };
       };
       if (!json.ok) {
-        setError(json.error || "Gagal menyimpan");
+        const err = json.error || "Gagal menyimpan";
+        setFormError(err);
+        setError(err);
         return;
       }
-      setMsg(
+      const okText =
         editKeyId == null
-          ? "Kunci ditambah. QR & barcode otomatis dibuat."
-          : "Kunci diperbarui."
-      );
-      setFormOpen(false);
-      resetForm();
+          ? "Kunci ditambah. QR otomatis dibuat."
+          : "Kunci diperbarui.";
+      setFormMsg(okText);
+      setMsg(okText);
       await load();
-      if (json.data?.barcode) {
-        setCodesInfo({
-          code: json.data.code,
-          jenis: json.data.jenis,
-          barcode: json.data.barcode,
-        });
-      }
+      window.setTimeout(() => {
+        setFormOpen(false);
+        resetForm();
+        setFormMsg(null);
+        if (json.data?.barcode) {
+          setCodesInfo({
+            code: json.data.code,
+            jenis: json.data.jenis,
+            barcode: json.data.barcode,
+          });
+        }
+      }, 700);
     } finally {
       setLoading(false);
     }
@@ -135,7 +149,7 @@ export function DaftarKunciPanel({
   async function regenerateToken(k: KeyRow) {
     if (
       !window.confirm(
-        `Buat ulang QR/barcode untuk ${k.code}? Label lama tidak berlaku.`
+        `Buat ulang QR untuk ${k.code}? Label lama tidak berlaku.`
       )
     ) {
       return;
@@ -157,7 +171,7 @@ export function DaftarKunciPanel({
         setError(json.error || "Gagal membuat ulang token");
         return;
       }
-      setMsg("QR & barcode baru dibuat.");
+      setMsg("QR baru dibuat.");
       await load();
       if (json.data) {
         setCodesInfo({
@@ -201,12 +215,6 @@ export function DaftarKunciPanel({
           Tambah kunci
         </button>
       </div>
-
-      <ul className="list-inside list-disc space-y-1 text-base text-slate-700">
-        <li>Nama kunci huruf besar, tidak boleh sama</li>
-        <li>QR & barcode dibuat otomatis (kode acak)</li>
-        <li>Klik baris / tombol Kode untuk melihat QR & barcode</li>
-      </ul>
 
       {error && (
         <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
@@ -289,7 +297,7 @@ export function DaftarKunciPanel({
                         onClick={() => void regenerateToken(k)}
                         disabled={loading}
                       >
-                        Ulangi QR
+                        Buat QR baru
                       </button>
                       <button
                         type="button"
@@ -348,7 +356,17 @@ export function DaftarKunciPanel({
             )}
             {editKeyId == null && (
               <p className="text-sm text-slate-600">
-                QR Code dan barcode akan dibuat otomatis setelah disimpan.
+                QR Code akan dibuat otomatis setelah disimpan.
+              </p>
+            )}
+            {formError && (
+              <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
+                {formError}
+              </p>
+            )}
+            {formMsg && (
+              <p className="rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-base text-emerald-950">
+                {formMsg}
               </p>
             )}
             <div className="flex flex-wrap gap-2 pt-2">

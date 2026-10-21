@@ -3,7 +3,7 @@
 import { durationMs, formatDuration } from "@/lib/domain";
 import { useSharedNow } from "@/lib/use-shared-now";
 
-/** Durasi hidup; tick bersama 2s agar hemat resource. */
+/** Durasi hidup; tick 1s agar realtime di mobile & dashboard. */
 export function LiveDuration({
   takeOut,
   giveBack,
@@ -12,7 +12,7 @@ export function LiveDuration({
   giveBack: string | null;
 }) {
   const live = Boolean(takeOut && !giveBack);
-  const now = useSharedNow(2000, live);
+  const now = useSharedNow(1_000, live);
 
   if (!takeOut) return <span>—</span>;
   const ms = durationMs(takeOut, giveBack, live ? now : Date.now());

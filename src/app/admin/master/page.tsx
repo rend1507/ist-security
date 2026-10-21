@@ -5,7 +5,7 @@ import { canManageMaster } from "@/lib/roles";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Data Master" };
+export const metadata = { title: "Data peminjam" };
 
 export default async function AdminMasterPage() {
   const user = await requirePageUser();
@@ -14,7 +14,7 @@ export default async function AdminMasterPage() {
   }
 
   return (
-    <AppShell title="Data Master — Peminjam" active="master" user={user}>
+    <AppShell title="Data peminjam" active="master" user={user}>
       <DataMasterPanel />
     </AppShell>
   );

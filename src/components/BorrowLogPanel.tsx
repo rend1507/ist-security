@@ -1,9 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
 import { btnPrimary } from "@/lib/ui";
+
+type SortKey =
+  | "key_code"
+  | "key_jenis"
+  | "borrower_name"
+  | "take_out_at"
+  | "give_back_at"
+  | "taken_by"
+  | "returned_by";
+
+const COLUMNS: { key: SortKey; label: string }[] = [
+  { key: "key_code", label: "Kunci" },
+  { key: "key_jenis", label: "Jenis" },
+  { key: "borrower_name", label: "Peminjam" },
+  { key: "take_out_at", label: "Dipinjam" },
+  { key: "give_back_at", label: "Dikembalikan" },
+  { key: "taken_by", label: "Petugas pinjam" },
+  { key: "returned_by", label: "Petugas kembali" },
+];
+
+function cmp(a: string | null, b: string | null) {
+  return String(a ?? "").localeCompare(String(b ?? ""), "id", {
+    numeric: true,
+  });
+}
 
 export function BorrowLogPanel() {
   const [from, setFrom] = useState(() => todayWibDate());
@@ -11,6 +36,8 @@ export function BorrowLogPanel() {
   const [rows, setRows] = useState<BorrowLogListRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("take_out_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const load = useCallback(async (fromYmd: string, toYmd: string) => {
     setLoading(true);
@@ -39,8 +66,34 @@ export function BorrowLogPanel() {
 
   useEffect(() => {
     void load(from, to);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- load sekali saat mount dengan default hari ini
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load sekali saat mount
   }, [load]);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(key === "take_out_at" || key === "give_back_at" ? "desc" : "asc");
+    }
+  }
+
+  const sorted = useMemo(() => {
+    const copy = [...rows];
+    const dir = sortDir === "asc" ? 1 : -1;
+    copy.sort((a, b) => {
+      const av =
+        sortKey === "borrower_name"
+          ? a.borrower_name
+          : (a[sortKey] as string | null);
+      const bv =
+        sortKey === "borrower_name"
+          ? b.borrower_name
+          : (b[sortKey] as string | null);
+      return cmp(av, bv) * dir;
+    });
+    return copy;
+  }, [rows, sortKey, sortDir]);
 
   return (
     <div className="space-y-4">
@@ -73,11 +126,6 @@ export function BorrowLogPanel() {
         </button>
       </div>
 
-      <ul className="list-inside list-disc space-y-1 text-base text-slate-700">
-        <li>Setiap pinjam tampil baris sendiri (kunci sama bisa berkali-kali)</li>
-        <li>Filter default: hari ini</li>
-      </ul>
-
       {error && (
         <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
           {error}
@@ -88,17 +136,27 @@ export function BorrowLogPanel() {
         <table className="min-w-full text-left text-base">
           <thead className="bg-slate-200 text-sm font-bold uppercase text-slate-800">
             <tr>
-              <th className="px-3 py-2">Kunci</th>
-              <th className="px-3 py-2">Jenis</th>
-              <th className="px-3 py-2">Peminjam</th>
-              <th className="px-3 py-2">Dipinjam</th>
-              <th className="px-3 py-2">Dikembalikan</th>
-              <th className="px-3 py-2">Petugas pinjam</th>
-              <th className="px-3 py-2">Petugas kembali</th>
+              {COLUMNS.map((col) => {
+                const active = sortKey === col.key;
+                return (
+                  <th key={col.key} className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(col.key)}
+                      className="inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-slate-950"
+                    >
+                      {col.label}
+                      <span className="text-[10px] opacity-80">
+                        {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+                      </span>
+                    </button>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && !loading ? (
+            {sorted.length === 0 && !loading ? (
               <tr>
                 <td
                   colSpan={7}
@@ -108,9 +166,11 @@ export function BorrowLogPanel() {
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              sorted.map((r) => (
                 <tr key={r.id} className="border-t border-slate-200">
-                  <td className="px-3 py-2 font-mono font-bold">{r.key_code}</td>
+                  <td className="px-3 py-2 font-mono font-bold">
+                    {r.key_code}
+                  </td>
                   <td className="px-3 py-2">{r.key_jenis}</td>
                   <td className="px-3 py-2">
                     <span className="font-semibold">{r.borrower_name}</span>
@@ -120,14 +180,16 @@ export function BorrowLogPanel() {
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-3 py-2 font-mono text-sm whitespace-nowrap">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-sm">
                     {r.take_out_at}
                   </td>
-                  <td className="px-3 py-2 font-mono text-sm whitespace-nowrap">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-sm">
                     {r.give_back_at ?? "—"}
                   </td>
                   <td className="px-3 py-2 text-sm">{r.taken_by ?? "—"}</td>
-                  <td className="px-3 py-2 text-sm">{r.returned_by ?? "—"}</td>
+                  <td className="px-3 py-2 text-sm">
+                    {r.returned_by ?? "—"}
+                  </td>
                 </tr>
               ))
             )}

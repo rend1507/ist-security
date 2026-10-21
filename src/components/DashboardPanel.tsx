@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { LiveDuration } from "@/components/LiveDuration";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
-import { formatDuration } from "@/lib/domain";
 
 type Stats = {
   total: number;
@@ -21,6 +21,8 @@ type Stats = {
     code: string;
     jenis: string;
     peminjam: string;
+    take_out?: string | null;
+    give_back?: string | null;
     durasi_ms: number;
     status: string;
   }[];
@@ -29,6 +31,7 @@ type Stats = {
     jenis: string;
     peminjam: string;
     take_out: string | null;
+    give_back?: string | null;
     durasi_ms: number;
     status: string;
   }[];
@@ -177,16 +180,20 @@ export function DashboardPanel({
     : 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {stats && stats.overdue > 0 && (
-            <span className="rounded bg-rose-200 px-2 py-1 text-sm font-bold text-rose-900">
-              {stats.overdue} terlambat
-            </span>
-          )}
-          <OfflineSyncBadge />
-        </div>
+    <div className="space-y-5 sm:space-y-6">
+      <div className="flex flex-wrap items-center gap-2">
+        {stats && stats.overdue > 0 && (
+          <span className="rounded-md bg-rose-200 px-2.5 py-1.5 text-sm font-bold text-rose-900">
+            {stats.overdue} terlambat
+          </span>
+        )}
+        {stats && (
+          <span className="rounded-md border-2 border-slate-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-800">
+            Batas terlambat:{" "}
+            <span className="font-mono">{stats.defaultOverdueMinutes}</span> mnt
+          </span>
+        )}
+        <OfflineSyncBadge />
       </div>
 
       {error && (
@@ -195,42 +202,42 @@ export function DashboardPanel({
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <div className="rounded-lg border-2 border-slate-300 bg-white px-3 py-4 sm:px-4 sm:py-5">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+        <div className="rounded-lg border-2 border-slate-300 bg-white px-3 py-3.5 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-600 sm:text-sm">
             Total kunci
           </p>
-          <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
+          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
             {stats?.total ?? "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 px-3 py-4 text-emerald-950 sm:px-4 sm:py-5">
+        <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 px-3 py-3.5 text-emerald-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 sm:text-sm">
             Siap dipinjam
           </p>
-          <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
+          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
             {stats ? siap : "—"}
           </p>
           <p className="mt-1 font-mono text-sm font-semibold">
             {stats ? shareLabel(siap, stats.total) : "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-4 text-amber-950 sm:px-4 sm:py-5">
+        <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-3.5 text-amber-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-amber-900 sm:text-sm">
             Masih dibawa
           </p>
-          <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
+          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
             {stats?.outOnly ?? "—"}
           </p>
           <p className="mt-1 font-mono text-sm font-semibold">
             {stats ? shareLabel(stats.outOnly, stats.total) : "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-4 text-rose-950 sm:px-4 sm:py-5">
+        <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-3.5 text-rose-950 sm:px-4 sm:py-5">
           <p className="text-xs font-bold uppercase tracking-wide text-rose-900 sm:text-sm">
             Terlambat
           </p>
-          <p className="mt-2 font-mono text-3xl font-bold sm:text-4xl">
+          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
             {stats?.overdue ?? "—"}
           </p>
           <p className="mt-1 font-mono text-sm font-semibold">
@@ -242,7 +249,7 @@ export function DashboardPanel({
       {stats && <BarChart stats={stats} showDebug={isSuperadmin} />}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-lg border-2 border-slate-300 bg-white p-4">
+        <section className="rounded-lg border-2 border-slate-300 bg-white p-3 sm:p-4">
           <h2 className="text-base font-bold text-slate-900">
             3 peminjam terbanyak
           </h2>
@@ -253,22 +260,24 @@ export function DashboardPanel({
               {stats.topBorrowers.map((b, i) => (
                 <li
                   key={b.name}
-                  className="flex justify-between border-b border-slate-200 py-1.5"
+                  className="flex justify-between gap-2 border-b border-slate-200 py-2"
                 >
-                  <span>
+                  <span className="min-w-0">
                     <span className="mr-2 font-mono text-slate-500">
                       {i + 1}.
                     </span>
                     {b.name}
                   </span>
-                  <span className="font-mono font-semibold">{b.count}</span>
+                  <span className="shrink-0 font-mono font-semibold">
+                    {b.count}×
+                  </span>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="rounded-lg border-2 border-slate-300 bg-white p-4">
+        <section className="rounded-lg border-2 border-slate-300 bg-white p-3 sm:p-4">
           <h2 className="text-base font-bold text-slate-900">
             3 pinjaman paling lama
           </h2>
@@ -278,15 +287,23 @@ export function DashboardPanel({
             <ul className="mt-3 space-y-2 text-base">
               {stats.topLongest.map((r) => (
                 <li
-                  key={r.code}
-                  className="flex justify-between gap-2 border-b border-slate-200 py-1.5"
+                  key={`${r.code}-${r.take_out ?? ""}`}
+                  className="flex justify-between gap-2 border-b border-slate-200 py-2"
                 >
                   <span className="min-w-0">
                     <span className="font-mono font-bold">{r.code}</span>{" "}
                     <span className="text-slate-600">{r.jenis}</span>
+                    {r.peminjam && r.peminjam !== "—" ? (
+                      <span className="mt-0.5 block text-sm text-slate-600">
+                        {r.peminjam}
+                      </span>
+                    ) : null}
                   </span>
-                  <span className="shrink-0 font-mono font-semibold">
-                    {formatDuration(r.durasi_ms)}
+                  <span className="shrink-0 self-center font-mono text-base font-bold tabular-nums">
+                    <LiveDuration
+                      takeOut={r.take_out ?? null}
+                      giveBack={r.give_back ?? null}
+                    />
                   </span>
                 </li>
               ))}
@@ -294,10 +311,13 @@ export function DashboardPanel({
           )}
         </section>
 
-        <section className="rounded-lg border-2 border-slate-300 bg-white p-4">
+        <section className="rounded-lg border-2 border-slate-300 bg-white p-3 sm:p-4 lg:col-span-1">
           <h2 className="text-base font-bold text-slate-900">
             Belum dikembalikan
           </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Durasi update tiap detik
+          </p>
           {!stats?.notBack.length ? (
             <p className="mt-3 text-base text-slate-500">
               Semua kunci sudah kembali.
@@ -307,25 +327,27 @@ export function DashboardPanel({
               {stats.notBack.map((r) => (
                 <li
                   key={r.code}
-                  className={`flex justify-between gap-2 rounded-md border-b border-slate-200 px-2 py-1.5 ${
+                  className={`flex items-center justify-between gap-3 rounded-md px-2.5 py-2.5 ${
                     r.status === "overdue" ? "bg-rose-100" : "bg-amber-100"
                   }`}
                 >
                   <span className="min-w-0">
-                    <span className="font-mono font-bold">{r.code}</span>{" "}
-                    <span className="text-slate-700">{r.jenis}</span>
-                    <span className="mt-0.5 block text-sm text-slate-600">
+                    <span className="font-mono text-lg font-bold">{r.code}</span>
+                    <span className="mt-0.5 block text-sm text-slate-700">
+                      {r.jenis}
+                    </span>
+                    <span className="mt-0.5 block text-sm font-semibold text-slate-800">
                       {r.peminjam}
                     </span>
                   </span>
                   <span
                     className={
                       r.status === "overdue"
-                        ? "shrink-0 font-mono font-bold text-rose-900"
-                        : "shrink-0 font-mono font-bold text-amber-950"
+                        ? "shrink-0 font-mono text-lg font-bold tabular-nums text-rose-900"
+                        : "shrink-0 font-mono text-lg font-bold tabular-nums text-amber-950"
                     }
                   >
-                    {formatDuration(r.durasi_ms)}
+                    <LiveDuration takeOut={r.take_out} giveBack={null} />
                   </span>
                 </li>
               ))}

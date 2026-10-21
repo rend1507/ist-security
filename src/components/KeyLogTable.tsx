@@ -26,15 +26,21 @@ type SortKey =
   | "status"
   | "lama";
 
-const COLUMNS: { key: SortKey; label: string; hideMobile?: boolean }[] = [
+const COLUMNS: {
+  key: SortKey;
+  label: string;
+  hideMobile?: boolean;
+  sortable?: boolean;
+  center?: boolean;
+}[] = [
   { key: "no", label: "No" },
   { key: "code", label: "Kode" },
   { key: "jenis", label: "Jenis", hideMobile: true },
-  { key: "barcode", label: "QR/Barcode", hideMobile: true },
+  { key: "barcode", label: "QR", hideMobile: true, sortable: false },
   { key: "peminjam", label: "Peminjam" },
   { key: "take_out", label: "Diambil", hideMobile: true },
   { key: "give_back", label: "Kembali", hideMobile: true },
-  { key: "status", label: "Status" },
+  { key: "status", label: "Status", center: true },
   { key: "lama", label: "Lama" },
 ];
 
@@ -192,25 +198,30 @@ export function KeyLogTable({
     <>
       <div className="-mx-1 overflow-x-auto rounded-lg border-2 border-slate-300 bg-white sm:mx-0">
         <table className="min-w-full text-left text-sm sm:text-base">
-          <thead className="bg-slate-900 text-xs font-bold uppercase tracking-wide text-slate-100 sm:text-sm">
+          <thead className="bg-slate-200 text-xs font-bold uppercase tracking-wide text-slate-800 sm:text-sm">
             <tr>
               {COLUMNS.map((col) => {
                 const active = sortKey === col.key;
+                const sortable = col.sortable !== false;
                 return (
                   <th
                     key={col.key}
-                    className={`whitespace-nowrap px-2 py-2.5 sm:px-3 sm:py-3 ${cellHide(col.hideMobile)}`}
+                    className={`whitespace-nowrap px-2 py-2.5 sm:px-3 sm:py-3 ${cellHide(col.hideMobile)} ${col.center ? "text-center" : ""}`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => toggleSort(col.key)}
-                      className="inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-white"
-                    >
-                      {col.label}
-                      <span className="text-[10px] opacity-80">
-                        {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
-                      </span>
-                    </button>
+                    {sortable ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(col.key)}
+                        className={`inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-slate-950 ${col.center ? "justify-center" : ""}`}
+                      >
+                        {col.label}
+                        <span className="text-[10px] opacity-80">
+                          {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+                        </span>
+                      </button>
+                    ) : (
+                      <span>{col.label}</span>
+                    )}
                   </th>
                 );
               })}
@@ -316,7 +327,9 @@ export function KeyLogTable({
                     >
                       {fmtTime(r.give_back)}
                     </td>
-                    <td className={`px-2 py-2.5 sm:px-3 ${baseCell}`}>
+                    <td
+                      className={`px-2 py-2.5 text-center sm:px-3 ${baseCell}`}
+                    >
                       <span
                         className={`inline-block rounded px-2 py-1 text-xs font-bold sm:text-sm ${statusBadgeClass(r.status)}`}
                       >

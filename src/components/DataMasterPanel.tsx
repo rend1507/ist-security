@@ -8,6 +8,7 @@ import {
   btnDanger,
   btnNeutral,
   btnPrimary,
+  btnSuccess,
 } from "@/lib/ui";
 
 type BorrowerRow = {
@@ -135,19 +136,11 @@ export function DataMasterPanel() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onClick={openAdd} className={btnNeutral}>
+        <button type="button" onClick={openAdd} className={btnSuccess}>
           <IconPlus />
           Tambah peminjam
         </button>
       </div>
-
-      <ul className="list-inside list-disc space-y-1 text-base text-slate-700">
-        <li>Nama & divisi disimpan huruf besar</li>
-        <li>Nonaktifkan = hilang dari daftar (riwayat tetap ada)</li>
-        <li>
-          Registrasi kunci & barcode ada di menu <strong>Daftar kunci</strong>
-        </li>
-      </ul>
 
       {error && (
         <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">

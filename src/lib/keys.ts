@@ -144,6 +144,8 @@ export async function getDashboardStats() {
       code: r.code,
       jenis: r.jenis,
       peminjam: r.peminjam,
+      take_out: r.take_out,
+      give_back: r.give_back,
       durasi_ms: r.durasi_ms,
       status: r.status,
     }));
@@ -151,12 +153,13 @@ export async function getDashboardStats() {
   /** Top take-out belum kembali (Excel: TOP 3 TAKE OUT NOT BACK) */
   const notBack = stillOutRows
     .sort((a, b) => b.durasi_ms - a.durasi_ms)
-    .slice(0, 3)
+    .slice(0, 8)
     .map((r) => ({
       code: r.code,
       jenis: r.jenis,
       peminjam: r.peminjam,
       take_out: r.take_out,
+      give_back: null as string | null,
       durasi_ms: r.durasi_ms,
       status: r.status,
     }));
