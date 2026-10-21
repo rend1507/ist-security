@@ -5,6 +5,10 @@ import { LiveDuration } from "@/components/LiveDuration";
 import { EditTimeModal } from "@/components/EditTimeModal";
 import { IconGive, IconPencil } from "@/components/Icons";
 import {
+  KeyCodesModal,
+  type KeyCodesInfo,
+} from "@/components/KeyCodesModal";
+import {
   MAX_EDITS,
   durationMs,
   parseAppDateTime,
@@ -26,7 +30,7 @@ const COLUMNS: { key: SortKey; label: string; hideMobile?: boolean }[] = [
   { key: "no", label: "No" },
   { key: "code", label: "Kode" },
   { key: "jenis", label: "Jenis", hideMobile: true },
-  { key: "barcode", label: "Barcode", hideMobile: true },
+  { key: "barcode", label: "QR/Barcode", hideMobile: true },
   { key: "peminjam", label: "Peminjam" },
   { key: "take_out", label: "Diambil", hideMobile: true },
   { key: "give_back", label: "Kembali", hideMobile: true },
@@ -107,6 +111,15 @@ export function KeyLogTable({
   onReturnKey?: (code: string) => void;
 }) {
   const [editRow, setEditRow] = useState<KeyLogView | null>(null);
+  const [codesInfo, setCodesInfo] = useState<KeyCodesInfo | null>(null);
+
+  function openCodes(r: KeyLogView) {
+    setCodesInfo({
+      code: r.code,
+      jenis: r.jenis,
+      barcode: r.barcode,
+    });
+  }
   const [sortKey, setSortKey] = useState<SortKey>("no");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [lamaAnchorMs, setLamaAnchorMs] = useState(() => Date.now());
@@ -257,7 +270,14 @@ export function KeyLogTable({
                     <td
                       className={`px-2 py-2.5 font-mono font-bold sm:px-3 ${baseCell}`}
                     >
-                      {r.code}
+                      <button
+                        type="button"
+                        className="text-left text-blue-800 hover:underline"
+                        title="Tampilkan QR & barcode"
+                        onClick={() => openCodes(r)}
+                      >
+                        {r.code}
+                      </button>
                     </td>
                     <td
                       className={`px-2 py-2.5 sm:px-3 ${cellHide(true)} ${baseCell}`}
@@ -267,7 +287,14 @@ export function KeyLogTable({
                     <td
                       className={`px-2 py-2.5 font-mono text-sm sm:px-3 ${cellHide(true)} ${baseCell}`}
                     >
-                      {r.barcode}
+                      <button
+                        type="button"
+                        className="font-semibold text-blue-800 hover:underline"
+                        title="Tampilkan QR & barcode"
+                        onClick={() => openCodes(r)}
+                      >
+                        Lihat
+                      </button>
                     </td>
                     <td
                       className={`px-2 py-2.5 font-semibold sm:px-3 ${baseCell}`}
@@ -352,6 +379,13 @@ export function KeyLogTable({
           giveBack={editRow.give_back}
           editCount={editRow.edit_count}
           onClose={() => setEditRow(null)}
+        />
+      )}
+
+      {codesInfo && (
+        <KeyCodesModal
+          info={codesInfo}
+          onClose={() => setCodesInfo(null)}
         />
       )}
     </>

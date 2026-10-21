@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
 import { MAX_EDITS } from "@/lib/domain";
+import { findKeyByScanOrCode } from "@/lib/key-lookup";
 import { nowLocalSql, verifyPin } from "@/lib/pin";
 import type { SessionUser } from "@/lib/auth";
 import { toStoredUpper } from "@/lib/text";
@@ -73,15 +74,7 @@ export async function takeOutKey(opts: {
   if (!pinOk.ok) return { ok: false as const, error: pinOk.error };
 
   const db = await getDb();
-  const code = opts.keyCode.trim().toUpperCase().replace(/^\*/, "");
-  const key = await db
-    .prepare(
-      `SELECT id, code, status FROM keys
-       WHERE deleted_at IS NULL AND (code = ? OR barcode = ?)
-       LIMIT 1`
-    )
-    .bind(code, code)
-    .first<{ id: number; code: string; status: string }>();
+  const key = await findKeyByScanOrCode(opts.keyCode);
 
   if (!key) return { ok: false as const, error: "Kunci tidak ditemukan." };
   if (key.status === "out") {
@@ -137,15 +130,7 @@ export async function giveBackKey(opts: {
   if (!pinOk.ok) return { ok: false as const, error: pinOk.error };
 
   const db = await getDb();
-  const code = opts.keyCode.trim().toUpperCase().replace(/^\*/, "");
-  const key = await db
-    .prepare(
-      `SELECT id, code, status FROM keys
-       WHERE deleted_at IS NULL AND (code = ? OR barcode = ?)
-       LIMIT 1`
-    )
-    .bind(code, code)
-    .first<{ id: number; code: string; status: string }>();
+  const key = await findKeyByScanOrCode(opts.keyCode);
 
   if (!key) return { ok: false as const, error: "Kunci tidak ditemukan." };
 

@@ -12,6 +12,7 @@ import {
   IconList,
   IconLock,
   IconSettings,
+  IconTake,
 } from "@/components/Icons";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Modal } from "@/components/Modal";
@@ -30,7 +31,7 @@ import {
   toolbarGroup,
 } from "@/lib/ui";
 
-type NavKey = "dashboard" | "keys" | "logs" | "master";
+type NavKey = "dashboard" | "keys" | "logs" | "daftar" | "master";
 
 type AppShellProps = {
   title: string;
@@ -43,6 +44,7 @@ const NAV_ICONS: Record<NavKey, React.ReactNode> = {
   dashboard: <IconChart />,
   keys: <IconKey />,
   logs: <IconList />,
+  daftar: <IconTake />,
   master: <IconDatabase />,
 };
 
@@ -59,6 +61,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
     { href: "/log-kunci", label: "Log kunci", key: "logs" },
   ];
   if (canManageMaster(user.role)) {
+    nav.push({ href: "/daftar-kunci", label: "Daftar kunci", key: "daftar" });
     nav.push({ href: "/admin/master", label: "Data Master", key: "master" });
   }
 

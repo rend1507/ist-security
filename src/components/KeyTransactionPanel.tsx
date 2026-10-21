@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconGive, IconTake } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
+import { normalizeScanOrCode } from "@/lib/scan-token";
 import { btnCancel, btnPrimary, btnSuccess, toolbarGroup } from "@/lib/ui";
 
 type Borrower = {
@@ -16,7 +17,7 @@ type Borrower = {
 type Mode = "take" | "give" | null;
 
 function normalizeKeyCode(raw: string) {
-  return raw.trim().toUpperCase().replace(/^\*/, "").replace(/\*$/, "");
+  return normalizeScanOrCode(raw);
 }
 
 type BarcodeDetectorLike = {
@@ -269,13 +270,13 @@ export function KeyTransactionPanel({
           <div className="space-y-3">
             <div>
               <label className="block text-sm text-slate-700">
-                Kode kunci / barcode
+                Kode kunci (manual) atau hasil scan
                 <input
                   value={keyCode}
                   onChange={(e) =>
                     setKeyCode(normalizeKeyCode(e.target.value))
                   }
-                  placeholder="SEC1 atau hasil scan"
+                  placeholder="SEC1 atau scan QR/barcode"
                   className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm outline-none ring-blue-600 focus:ring-2"
                 />
               </label>

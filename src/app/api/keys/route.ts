@@ -2,7 +2,8 @@ import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { listKeyLogViews } from "@/lib/keys";
 import { canManageMaster, canSetOverdue } from "@/lib/roles";
-import { toStoredLower } from "@/lib/text";
+import { generateScanToken } from "@/lib/scan-token";
+import { toStoredUpper } from "@/lib/text";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   try {
     if (mode === "master") {
       if (!canManageMaster(user.role)) {
-        return jsonErr("Akun ini tidak boleh mengelola data master.", 403);
+        return jsonErr("Akun ini tidak boleh mengelola daftar kunci.", 403);
       }
       const db = await getDb();
       const { results } = await db
@@ -36,7 +37,7 @@ export async function GET(req: Request) {
 }
 
 function normalizeCode(raw: string) {
-  return raw.trim().toUpperCase().replace(/^\*/, "").replace(/\*$/, "");
+  return toStoredUpper(raw.replace(/^\*/, "").replace(/\*$/, ""));
 }
 
 export async function POST(req: Request) {
@@ -50,14 +51,15 @@ export async function POST(req: Request) {
     const body = (await req.json()) as {
       code?: string;
       jenis?: string;
-      barcode?: string;
       overdue_minutes?: number | null;
+      regenerate_token?: boolean;
     };
     const code = normalizeCode(body.code ?? "");
-    const jenis = toStoredLower(body.jenis ?? "");
-    const barcode = normalizeCode(body.barcode || code);
-    if (!code) return jsonErr("Kode kunci wajib diisi.", 400);
+    const jenis = toStoredUpper(body.jenis ?? "");
+    if (!code) return jsonErr("Nama / kode kunci wajib diisi (huruf besar).", 400);
     if (!jenis) return jsonErr("Jenis kunci wajib diisi.", 400);
+
+    const barcode = generateScanToken();
 
     const db = await getDb();
     const clash = await db
@@ -69,7 +71,7 @@ export async function POST(req: Request) {
       .bind(code, barcode)
       .first();
     if (clash) {
-      return jsonErr("Kode atau barcode sudah dipakai kunci lain.", 400);
+      return jsonErr("Nama kunci sudah dipakai. Pakai nama lain.", 400);
     }
 
     let overdue: number | null = null;
@@ -89,7 +91,12 @@ export async function POST(req: Request) {
       .bind(code, jenis, barcode, overdue)
       .run();
 
-    return jsonOk({ id: Number(res.meta.last_row_id), code, jenis, barcode });
+    return jsonOk({
+      id: Number(res.meta.last_row_id),
+      code,
+      jenis,
+      barcode,
+    });
   } catch (e) {
     return jsonErr(e instanceof Error ? e.message : "Gagal menambah kunci", 500);
   }
@@ -107,9 +114,9 @@ export async function PATCH(req: Request) {
       id?: number;
       code?: string;
       jenis?: string;
-      barcode?: string;
       overdue_minutes?: number | null;
       deactivate?: boolean;
+      regenerate_token?: boolean;
     };
     const id = Number(body.id);
     if (!id) return jsonErr("Data kunci tidak valid.", 400);
@@ -117,10 +124,18 @@ export async function PATCH(req: Request) {
     const db = await getDb();
     const existing = await db
       .prepare(
-        `SELECT id, code, status FROM keys WHERE id = ? AND deleted_at IS NULL`
+        `SELECT id, code, status, jenis, barcode, overdue_minutes FROM keys
+         WHERE id = ? AND deleted_at IS NULL`
       )
       .bind(id)
-      .first<{ id: number; code: string; status: string }>();
+      .first<{
+        id: number;
+        code: string;
+        status: string;
+        jenis: string;
+        barcode: string;
+        overdue_minutes: number | null;
+      }>();
     if (!existing) return jsonErr("Kunci tidak ditemukan.", 404);
 
     if (body.deactivate) {
@@ -140,14 +155,20 @@ export async function PATCH(req: Request) {
       return jsonOk({ id, deactivated: true });
     }
 
-    const code = body.code != null ? normalizeCode(body.code) : existing.code;
+    const code =
+      body.code != null ? normalizeCode(body.code) : existing.code;
     const jenis =
-      body.jenis !== undefined ? toStoredLower(body.jenis) : undefined;
-    const barcode =
-      body.barcode != null ? normalizeCode(body.barcode) : undefined;
+      body.jenis !== undefined
+        ? toStoredUpper(body.jenis)
+        : existing.jenis;
+    const barcode = body.regenerate_token
+      ? generateScanToken()
+      : existing.barcode;
 
-    if (body.code != null && !code) return jsonErr("Kode kunci wajib diisi.", 400);
-    if (jenis !== undefined && !jenis) {
+    if (body.code != null && !code) {
+      return jsonErr("Nama / kode kunci wajib diisi.", 400);
+    }
+    if (body.jenis !== undefined && !jenis) {
       return jsonErr("Jenis kunci wajib diisi.", 400);
     }
 
@@ -157,29 +178,16 @@ export async function PATCH(req: Request) {
          WHERE deleted_at IS NULL AND id != ? AND (code = ? OR barcode = ?)
          LIMIT 1`
       )
-      .bind(id, code, barcode ?? code)
+      .bind(id, code, barcode)
       .first();
     if (clash) {
-      return jsonErr("Kode atau barcode sudah dipakai kunci lain.", 400);
+      return jsonErr("Nama kunci atau token sudah dipakai kunci lain.", 400);
     }
 
-    const row = await db
-      .prepare(
-        `SELECT jenis, barcode, overdue_minutes FROM keys WHERE id = ?`
-      )
-      .bind(id)
-      .first<{
-        jenis: string;
-        barcode: string;
-        overdue_minutes: number | null;
-      }>();
-
-    const nextJenis = jenis ?? row?.jenis ?? "";
-    const nextBarcode = barcode ?? row?.barcode ?? code;
-    let nextOverdue = row?.overdue_minutes ?? null;
+    let nextOverdue = existing.overdue_minutes;
     if (body.overdue_minutes !== undefined) {
       if (!canSetOverdue(user.role)) {
-        return jsonErr("Hanya Super Admin yang mengatur batas terlambat.", 403);
+        return jsonErr("Akun ini tidak boleh mengatur batas terlambat.", 403);
       }
       nextOverdue =
         body.overdue_minutes == null
@@ -194,10 +202,10 @@ export async function PATCH(req: Request) {
              updated_at = datetime('now')
          WHERE id = ?`
       )
-      .bind(code, nextJenis, nextBarcode, nextOverdue, id)
+      .bind(code, jenis, barcode, nextOverdue, id)
       .run();
 
-    return jsonOk({ id, code, jenis: nextJenis, barcode: nextBarcode });
+    return jsonOk({ id, code, jenis, barcode });
   } catch (e) {
     return jsonErr(e instanceof Error ? e.message : "Gagal mengubah kunci", 500);
   }
