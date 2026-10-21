@@ -56,7 +56,8 @@ echo "==> Apply migrations D1 remote (${DB_NAME})"
 npx wrangler d1 migrations apply "${DB_NAME}" --remote
 
 echo "==> OpenNext build + deploy"
-npx opennextjs-cloudflare build
+# Next 15.5.28 = Maintenance LTS (security patch); OpenNext masih flag unsupported.
+npx opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion
 npx opennextjs-cloudflare deploy
 
 echo "==> SESSION_SECRET"

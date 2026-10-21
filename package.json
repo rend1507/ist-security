@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "preview": "opennextjs-cloudflare build && wrangler dev",
+    "preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && wrangler dev",
     "deploy": "bash scripts/deploy.sh",
     "env:sync": "bash scripts/sync-env-from-settings.sh",
     "db:migrate:local": "wrangler d1 migrations apply ist-security --local",
