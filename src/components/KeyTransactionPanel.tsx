@@ -303,7 +303,11 @@ export function KeyTransactionPanel({
           }}
           wide
         >
-          <p className="mb-3 text-base text-slate-600">Isi data, lalu PIN 6 angka.</p>
+          <p className="mb-3 text-base text-slate-700">
+            Isi data di bawah. Di akhir isi{" "}
+            <span className="font-bold text-slate-900">PIN 6 angka</span>
+            {" "}(bukan password login).
+          </p>
           <div className="space-y-3">
             <div>
               {fromScan && detectedCode ? (
@@ -368,8 +372,16 @@ export function KeyTransactionPanel({
             </div>
 
             {mode === "take" && (
-              <div className="space-y-2">
-                <label className="block text-sm text-slate-700">
+              <div className="space-y-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 p-3">
+                <p className="text-sm font-bold uppercase tracking-wide text-emerald-950">
+                  Nama peminjam
+                </p>
+                <p className="text-sm text-emerald-900">
+                  Pilih dari daftar, atau centang di bawah jika nama baru.
+                  Daftar lengkap juga ada di menu{" "}
+                  <span className="font-semibold">Data peminjam</span>.
+                </p>
+                <label className="block text-base font-semibold text-slate-900">
                   Cari peminjam
                   <input
                     value={borrowerQ}
@@ -378,19 +390,19 @@ export function KeyTransactionPanel({
                       setSelectedBorrower("");
                     }}
                     placeholder="Ketik nama…"
-                    className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none ring-blue-600 focus:ring-2"
+                    className="mt-1 w-full rounded-md border-2 border-emerald-600 bg-white px-3 py-2.5 text-base outline-none ring-emerald-600 focus:ring-2"
                   />
                 </label>
                 {!newBorrower && borrowers.length > 0 && (
-                  <ul className="max-h-36 overflow-auto rounded-md border border-slate-200 text-sm">
+                  <ul className="max-h-36 overflow-auto rounded-md border-2 border-emerald-300 bg-white text-base">
                     {borrowers.map((b) => (
                       <li key={b.id}>
                         <button
                           type="button"
                           className={
                             selectedBorrower === b.name
-                              ? "w-full bg-blue-50 px-3 py-2 text-left font-medium text-blue-900"
-                              : "w-full px-3 py-2 text-left hover:bg-slate-50"
+                              ? "w-full bg-emerald-100 px-3 py-2.5 text-left font-bold text-emerald-950"
+                              : "w-full px-3 py-2.5 text-left hover:bg-emerald-50"
                           }
                           onClick={() => {
                             setSelectedBorrower(b.name);
@@ -403,41 +415,58 @@ export function KeyTransactionPanel({
                     ))}
                   </ul>
                 )}
-                <label className="flex items-center gap-2 text-sm text-slate-700">
+                <label
+                  className={`flex cursor-pointer items-start gap-3 rounded-md border-2 px-3 py-3 text-base font-semibold ${
+                    newBorrower
+                      ? "border-emerald-700 bg-emerald-200 text-emerald-950"
+                      : "border-emerald-400 bg-white text-slate-900"
+                  }`}
+                >
                   <input
                     type="checkbox"
+                    className="mt-1 h-5 w-5 accent-emerald-700"
                     checked={newBorrower}
                     onChange={(e) => setNewBorrower(e.target.checked)}
                   />
-                  Nama belum ada — simpan sebagai peminjam baru
+                  <span>
+                    Nama belum ada di daftar —{" "}
+                    <span className="underline">tambah sebagai peminjam baru</span>
+                  </span>
                 </label>
                 {newBorrower && (
-                  <label className="block text-sm text-slate-700">
+                  <label className="block text-base font-semibold text-slate-900">
                     Divisi / keterangan (opsional)
                     <input
                       value={newDivisi}
                       onChange={(e) => setNewDivisi(e.target.value)}
                       placeholder="contoh: IST, DRIVER"
-                      className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-md border-2 border-emerald-600 bg-white px-3 py-2.5 text-base uppercase"
                     />
                   </label>
                 )}
               </div>
             )}
 
-            <label className="block text-sm text-slate-700">
-              PIN akun (6 angka)
-              <input
-                type="password"
-                inputMode="numeric"
-                maxLength={6}
-                value={pin}
-                onChange={(e) =>
-                  setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm tracking-widest outline-none ring-blue-600 focus:ring-2"
-              />
-            </label>
+            <div className="rounded-lg border-2 border-blue-600 bg-blue-50 p-3">
+              <label className="block text-base font-bold text-blue-950">
+                PIN 6 angka (wajib tiap aksi)
+                <span className="mt-0.5 block text-sm font-semibold text-blue-800">
+                  Bukan password login. Hanya angka, contoh demo: 123456
+                </span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) =>
+                    setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="••••••"
+                  className="mt-2 w-full rounded-md border-2 border-blue-700 bg-white px-3 py-3 font-mono text-lg tracking-[0.35em] outline-none ring-blue-600 focus:ring-2"
+                />
+              </label>
+            </div>
 
             {error && (
               <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800">

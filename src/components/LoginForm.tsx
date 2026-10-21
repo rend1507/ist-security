@@ -107,7 +107,7 @@ export function LoginForm() {
           </span>
         </p>
         <p className="mt-1 text-slate-700">
-          PIN default (transaksi):{" "}
+          PIN transaksi (bukan password login):{" "}
           <span className="font-mono font-semibold text-slate-900">
             {DEMO_PIN}
           </span>

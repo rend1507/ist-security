@@ -110,19 +110,25 @@ export function EditTimeModal({
               className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 text-base"
             />
           </label>
-          <label className="block text-base font-semibold text-slate-800">
-            PIN akun (6 angka)
-            <input
-              type="password"
-              inputMode="numeric"
-              maxLength={6}
-              value={pin}
-              onChange={(e) =>
-                setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 font-mono tracking-widest"
-            />
-          </label>
+          <div className="rounded-lg border-2 border-blue-600 bg-blue-50 p-3">
+            <label className="block text-base font-bold text-blue-950">
+              PIN 6 angka (wajib tiap aksi)
+              <span className="mt-0.5 block text-sm font-semibold text-blue-800">
+                Bukan password login
+              </span>
+              <input
+                type="password"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={pin}
+                onChange={(e) =>
+                  setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                className="mt-2 w-full rounded-md border-2 border-blue-700 bg-white px-3 py-3 font-mono text-lg tracking-[0.35em]"
+              />
+            </label>
+          </div>
           {error && (
             <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
               {error}
