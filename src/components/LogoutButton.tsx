@@ -9,7 +9,7 @@ export function LogoutButton() {
   return (
     <button
       type="button"
-      className={`${btnCancel} !px-3 !py-2 text-sm`}
+      className={`${btnCancel} !min-h-11 !px-3 !py-2`}
       onClick={async () => {
         await fetch("/api/auth/logout", { method: "POST" });
         router.push("/login");

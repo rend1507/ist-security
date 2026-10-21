@@ -5,10 +5,16 @@ import { IconPlus } from "@/components/Icons";
 import { KeyCodesModal, type KeyCodesInfo } from "@/components/KeyCodesModal";
 import { Modal } from "@/components/Modal";
 import {
+  alertError,
+  alertOk,
   btnCancel,
   btnDanger,
   btnNeutral,
   btnPrimary,
+  btnRow,
+  tableHead,
+  tableShell,
+  textLabel,
 } from "@/lib/ui";
 
 type KeyRow = {
@@ -216,20 +222,12 @@ export function DaftarKunciPanel({
         </button>
       </div>
 
-      {error && (
-        <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-          {error}
-        </p>
-      )}
-      {msg && (
-        <p className="rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-base text-emerald-950">
-          {msg}
-        </p>
-      )}
+      {error && <p className={alertError}>{error}</p>}
+      {msg && <p className={alertOk}>{msg}</p>}
 
-      <div className="overflow-x-auto rounded-lg border-2 border-slate-300 bg-white">
+      <div className={tableShell}>
         <table className="min-w-full text-left text-base">
-          <thead className="bg-slate-200 text-sm font-bold uppercase text-slate-800">
+          <thead className={tableHead}>
             <tr>
               <th className="px-3 py-2">Nama</th>
               <th className="px-3 py-2">Jenis</th>
@@ -266,14 +264,14 @@ export function DaftarKunciPanel({
                     </button>
                   </td>
                   <td className="px-3 py-2">{k.jenis}</td>
-                  <td className="px-3 py-2 text-sm">
+                  <td className="px-3 py-2.5 text-base">
                     {k.status === "out" ? "Sedang dibawa" : "Siap"}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5">
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        className={`${btnPrimary} !px-3 !py-1.5 text-sm`}
+                        className={`${btnPrimary} ${btnRow}`}
                         onClick={() =>
                           setCodesInfo({
                             code: k.code,
@@ -286,14 +284,14 @@ export function DaftarKunciPanel({
                       </button>
                       <button
                         type="button"
-                        className={`${btnNeutral} !px-3 !py-1.5 text-sm`}
+                        className={`${btnNeutral} ${btnRow}`}
                         onClick={() => openEdit(k)}
                       >
                         Ubah
                       </button>
                       <button
                         type="button"
-                        className={`${btnNeutral} !px-3 !py-1.5 text-sm`}
+                        className={`${btnNeutral} ${btnRow}`}
                         onClick={() => void regenerateToken(k)}
                         disabled={loading}
                       >
@@ -301,7 +299,7 @@ export function DaftarKunciPanel({
                       </button>
                       <button
                         type="button"
-                        className={`${btnDanger} !px-3 !py-1.5 text-sm`}
+                        className={`${btnDanger} ${btnRow}`}
                         onClick={() => void deactivate(k.id, k.code)}
                       >
                         Nonaktif
@@ -324,7 +322,7 @@ export function DaftarKunciPanel({
           }}
         >
           <div className="space-y-3">
-            <label className="block text-base font-semibold">
+            <label className={textLabel}>
               Nama kunci (huruf besar, unik)
               <input
                 value={kCode}
@@ -333,7 +331,7 @@ export function DaftarKunciPanel({
                 className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 font-mono text-base uppercase"
               />
             </label>
-            <label className="block text-base font-semibold">
+            <label className={textLabel}>
               Jenis
               <input
                 value={kJenis}
@@ -343,7 +341,7 @@ export function DaftarKunciPanel({
               />
             </label>
             {canSetOverdue && (
-              <label className="block text-base font-semibold">
+              <label className={textLabel}>
                 Batas terlambat (menit, opsional)
                 <input
                   type="number"
@@ -355,20 +353,12 @@ export function DaftarKunciPanel({
               </label>
             )}
             {editKeyId == null && (
-              <p className="text-sm text-slate-600">
+              <p className="text-base text-slate-700">
                 QR Code akan dibuat otomatis setelah disimpan.
               </p>
             )}
-            {formError && (
-              <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-                {formError}
-              </p>
-            )}
-            {formMsg && (
-              <p className="rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-base text-emerald-950">
-                {formMsg}
-              </p>
-            )}
+            {formError && <p className={alertError}>{formError}</p>}
+            {formMsg && <p className={alertOk}>{formMsg}</p>}
             <div className="flex flex-wrap gap-2 pt-2">
               <button
                 type="button"

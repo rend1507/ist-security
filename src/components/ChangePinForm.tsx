@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { btnPrimary } from "@/lib/ui";
+import {
+  alertError,
+  alertOk,
+  btnPrimary,
+  inputBase,
+  textLabel,
+} from "@/lib/ui";
 
 export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
   const [currentPin, setCurrentPin] = useState("");
@@ -55,9 +61,10 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       {isSuperadmin && (
-        <label className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="flex cursor-pointer items-start gap-3 text-base font-semibold text-slate-800">
           <input
             type="checkbox"
+            className="mt-1 h-5 w-5 accent-blue-700"
             checked={forOther}
             onChange={(e) => setForOther(e.target.checked)}
           />
@@ -65,17 +72,17 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
         </label>
       )}
       {forOther && isSuperadmin ? (
-        <label className="block text-sm">
+        <label className={textLabel}>
           ID petugas
           <input
             value={targetUsername}
             onChange={(e) => setTargetUsername(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+            className={`${inputBase} font-mono`}
             required
           />
         </label>
       ) : (
-        <label className="block text-sm">
+        <label className={textLabel}>
           PIN lama
           <input
             type="password"
@@ -85,12 +92,12 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
             onChange={(e) =>
               setCurrentPin(e.target.value.replace(/\D/g, "").slice(0, 6))
             }
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono tracking-widest"
+            className={`${inputBase} font-mono tracking-[0.35em]`}
             required
           />
         </label>
       )}
-      <label className="block text-sm">
+      <label className={textLabel}>
         PIN baru (6 angka)
         <input
           type="password"
@@ -100,11 +107,11 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
           onChange={(e) =>
             setNewPin(e.target.value.replace(/\D/g, "").slice(0, 6))
           }
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono tracking-widest"
+          className={`${inputBase} font-mono tracking-[0.35em]`}
           required
         />
       </label>
-      <label className="block text-sm">
+      <label className={textLabel}>
         Ulangi PIN baru
         <input
           type="password"
@@ -114,20 +121,12 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
           onChange={(e) =>
             setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 6))
           }
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono tracking-widest"
+          className={`${inputBase} font-mono tracking-[0.35em]`}
           required
         />
       </label>
-      {error && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800">
-          {error}
-        </p>
-      )}
-      {msg && (
-        <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-          {msg}
-        </p>
-      )}
+      {error && <p className={alertError}>{error}</p>}
+      {msg && <p className={alertOk}>{msg}</p>}
       <button type="submit" disabled={loading} className={btnPrimary}>
         {loading ? "Menyimpan…" : "Simpan"}
       </button>

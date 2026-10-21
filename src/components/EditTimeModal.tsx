@@ -113,7 +113,7 @@ export function EditTimeModal({
           <div className="rounded-lg border-2 border-blue-600 bg-blue-50 p-3">
             <label className="block text-base font-bold text-blue-950">
               PIN 6 angka (wajib tiap aksi)
-              <span className="mt-0.5 block text-sm font-semibold text-blue-800">
+              <span className="mt-1 block text-base font-semibold text-blue-900">
                 Bukan password login
               </span>
               <input

@@ -4,11 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import { IconPlus } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
 import {
+  alertError,
+  alertOk,
   btnCancel,
   btnDanger,
   btnNeutral,
   btnPrimary,
+  btnRow,
   btnSuccess,
+  tableHead,
+  tableShell,
+  textLabel,
 } from "@/lib/ui";
 
 type BorrowerRow = {
@@ -142,24 +148,16 @@ export function DataMasterPanel() {
         </button>
       </div>
 
-      {error && (
-        <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-          {error}
-        </p>
-      )}
-      {msg && (
-        <p className="rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-base text-emerald-950">
-          {msg}
-        </p>
-      )}
+      {error && <p className={alertError}>{error}</p>}
+      {msg && <p className={alertOk}>{msg}</p>}
 
-      <div className="overflow-x-auto rounded-lg border-2 border-slate-300 bg-white">
+      <div className={tableShell}>
         <table className="min-w-full text-left text-base">
-          <thead className="bg-slate-200 text-sm font-bold uppercase text-slate-800">
+          <thead className={tableHead}>
             <tr>
-              <th className="px-3 py-2">Nama</th>
-              <th className="px-3 py-2">Divisi</th>
-              <th className="px-3 py-2">Aksi</th>
+              <th className="px-3 py-2.5">Nama</th>
+              <th className="px-3 py-2.5">Divisi</th>
+              <th className="px-3 py-2.5">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -167,7 +165,7 @@ export function DataMasterPanel() {
               <tr>
                 <td
                   colSpan={3}
-                  className="px-3 py-8 text-center text-slate-500"
+                  className="px-3 py-8 text-center text-base text-slate-500"
                 >
                   Belum ada peminjam.
                 </td>
@@ -175,22 +173,22 @@ export function DataMasterPanel() {
             ) : (
               borrowers.map((b) => (
                 <tr key={b.id} className="border-t border-slate-200">
-                  <td className="px-3 py-2 font-semibold">
+                  <td className="px-3 py-2.5 text-base font-semibold">
                     {b.display_name || b.name}
                   </td>
-                  <td className="px-3 py-2">{b.divisi || "—"}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5 text-base">{b.divisi || "—"}</td>
+                  <td className="px-3 py-2.5">
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        className={`${btnNeutral} !px-3 !py-1.5 text-sm`}
+                        className={`${btnNeutral} ${btnRow}`}
                         onClick={() => openEdit(b)}
                       >
                         Ubah
                       </button>
                       <button
                         type="button"
-                        className={`${btnDanger} !px-3 !py-1.5 text-sm`}
+                        className={`${btnDanger} ${btnRow}`}
                         onClick={() => void deactivateBorrower(b.id)}
                       >
                         Nonaktif
@@ -215,7 +213,7 @@ export function DataMasterPanel() {
           }}
         >
           <div className="space-y-3">
-            <label className="block text-base font-semibold">
+            <label className={textLabel}>
               Nama
               <input
                 value={bDisplay}
@@ -223,7 +221,7 @@ export function DataMasterPanel() {
                 className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 text-base uppercase"
               />
             </label>
-            <label className="block text-base font-semibold">
+            <label className={textLabel}>
               Divisi
               <input
                 value={bDivisi}

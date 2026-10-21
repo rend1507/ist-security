@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { Modal } from "@/components/Modal";
-import { btnNeutral } from "@/lib/ui";
+import { alertError, btnNeutral, textMuted } from "@/lib/ui";
 
 export type KeyCodesInfo = {
   code: string;
@@ -53,20 +53,17 @@ export function KeyCodesModal({
         <p className="text-base text-slate-700">
           Jenis: <span className="font-semibold">{info.jenis}</span>
         </p>
-        <p className="text-sm text-slate-600">
+        <p className={textMuted}>
           Scan QR menghasilkan kode acak. Sistem mengenali kunci otomatis.
           Input manual tetap pakai{" "}
-          <span className="font-mono font-bold">{info.code}</span>.
+          <span className="font-mono font-bold text-slate-900">{info.code}</span>
+          .
         </p>
 
-        {error && (
-          <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-            {error}
-          </p>
-        )}
+        {error && <p className={alertError}>{error}</p>}
 
         <div className="rounded-lg border-2 border-slate-300 bg-white p-4 text-center">
-          <p className="mb-2 text-sm font-bold uppercase text-slate-700">
+          <p className="mb-2 text-base font-bold uppercase tracking-wide text-slate-800">
             QR Code
           </p>
           <canvas ref={qrRef} className="mx-auto" />

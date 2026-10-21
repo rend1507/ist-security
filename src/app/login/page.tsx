@@ -19,7 +19,7 @@ export default async function LoginPage() {
         }}
       />
       <div className="relative w-full max-w-md rounded-lg border-2 border-slate-300 bg-white p-8 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+        <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">
           PT. Indonesia Smelting Technology
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">

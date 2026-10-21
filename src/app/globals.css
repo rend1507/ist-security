@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
+/**
+ * Target petugas ~30–65:
+ * - Body ≥16px, line-height 1.55
+ * - Sans = UI; Mono = kode/jam/PIN saja
+ * - Status: emerald / amber / rose; aksi utama blue-700
+ */
 :root {
-  --background: #f8fafc;
+  --background: #f1f5f9;
   --foreground: #0f172a;
-  --accent: #2563eb;
+  --accent: #1d4ed8;
 }
 
 @theme inline {
@@ -18,13 +24,20 @@ body {
   color: var(--foreground);
   font-family: var(--font-ibm-plex-sans), ui-sans-serif, sans-serif;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Kejelasan klik untuk usia ~30–65 */
 button,
 a,
 [role="button"],
 summary {
   cursor: pointer;
+}
+
+/* Input native lebih mudah dibaca di tablet */
+input,
+select,
+textarea {
+  font-size: 16px;
 }

@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
-import { btnPrimary } from "@/lib/ui";
+import {
+  alertError,
+  btnPrimary,
+  tableHead,
+  tableShell,
+  textLabel,
+} from "@/lib/ui";
 
 type SortKey =
   | "key_code"
@@ -98,22 +104,22 @@ export function BorrowLogPanel() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block text-base font-semibold text-slate-800">
+        <label className={textLabel}>
           Dari tanggal
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2 font-mono text-base"
+            className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2.5 font-mono text-base"
           />
         </label>
-        <label className="block text-base font-semibold text-slate-800">
+        <label className={textLabel}>
           Sampai tanggal
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2 font-mono text-base"
+            className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2.5 font-mono text-base"
           />
         </label>
         <button
@@ -126,27 +132,23 @@ export function BorrowLogPanel() {
         </button>
       </div>
 
-      {error && (
-        <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-          {error}
-        </p>
-      )}
+      {error && <p className={alertError}>{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border-2 border-slate-300 bg-white">
+      <div className={tableShell}>
         <table className="min-w-full text-left text-base">
-          <thead className="bg-slate-200 text-sm font-bold uppercase text-slate-800">
+          <thead className={tableHead}>
             <tr>
               {COLUMNS.map((col) => {
                 const active = sortKey === col.key;
                 return (
-                  <th key={col.key} className="px-3 py-2">
+                  <th key={col.key} className="px-3 py-2.5">
                     <button
                       type="button"
                       onClick={() => toggleSort(col.key)}
                       className="inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-slate-950"
                     >
                       {col.label}
-                      <span className="text-[10px] opacity-80">
+                      <span className="text-xs opacity-80" aria-hidden>
                         {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
                       </span>
                     </button>
@@ -160,7 +162,7 @@ export function BorrowLogPanel() {
               <tr>
                 <td
                   colSpan={7}
-                  className="px-3 py-6 text-center text-slate-500"
+                  className="px-3 py-8 text-center text-base text-slate-500"
                 >
                   Tidak ada log di rentang tanggal ini.
                 </td>
@@ -168,26 +170,28 @@ export function BorrowLogPanel() {
             ) : (
               sorted.map((r) => (
                 <tr key={r.id} className="border-t border-slate-200">
-                  <td className="px-3 py-2 font-mono font-bold">
+                  <td className="px-3 py-2.5 font-mono text-base font-bold">
                     {r.key_code}
                   </td>
-                  <td className="px-3 py-2">{r.key_jenis}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2.5 text-base">{r.key_jenis}</td>
+                  <td className="px-3 py-2.5 text-base">
                     <span className="font-semibold">{r.borrower_name}</span>
                     {r.borrower_divisi ? (
-                      <span className="mt-0.5 block text-sm text-slate-600">
+                      <span className="mt-0.5 block text-base text-slate-700">
                         {r.borrower_divisi}
                       </span>
                     ) : null}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 font-mono text-sm">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base">
                     {r.take_out_at}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 font-mono text-sm">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base">
                     {r.give_back_at ?? "—"}
                   </td>
-                  <td className="px-3 py-2 text-sm">{r.taken_by ?? "—"}</td>
-                  <td className="px-3 py-2 text-sm">
+                  <td className="px-3 py-2.5 text-base">
+                    {r.taken_by ?? "—"}
+                  </td>
+                  <td className="px-3 py-2.5 text-base">
                     {r.returned_by ?? "—"}
                   </td>
                 </tr>

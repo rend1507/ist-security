@@ -6,7 +6,17 @@ import {
   ROLE_LABELS,
   type Role,
 } from "@/lib/roles";
-import { btnDanger, btnNeutral, btnPrimary, pillActive, pillIdle } from "@/lib/ui";
+import {
+  alertError,
+  alertOk,
+  btnDanger,
+  btnNeutral,
+  btnPrimary,
+  btnRow,
+  pillActive,
+  pillIdle,
+  tableHead,
+} from "@/lib/ui";
 
 type UserRow = {
   id: number;
@@ -170,16 +180,8 @@ export function SuperadminPanel({
         </div>
       )}
 
-      {error && (
-        <p className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-base text-rose-900">
-          {error}
-        </p>
-      )}
-      {msg && (
-        <p className="rounded-md border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-base text-emerald-950">
-          {msg}
-        </p>
-      )}
+      {error && <p className={alertError}>{error}</p>}
+      {msg && <p className={alertOk}>{msg}</p>}
 
       {activeTab === "overdue" ? (
         <div className="space-y-3">
@@ -277,12 +279,12 @@ export function SuperadminPanel({
 
           <div className="overflow-x-auto rounded-md border-2 border-slate-300">
             <table className="min-w-full text-left text-base">
-              <thead className="bg-slate-200 text-sm font-bold uppercase text-slate-800">
+              <thead className={tableHead}>
                 <tr>
-                  <th className="px-3 py-2">ID</th>
-                  <th className="px-3 py-2">Nama</th>
-                  <th className="px-3 py-2">Peran</th>
-                  <th className="px-3 py-2">Aksi</th>
+                  <th className="px-3 py-2.5">ID</th>
+                  <th className="px-3 py-2.5">Nama</th>
+                  <th className="px-3 py-2.5">Peran</th>
+                  <th className="px-3 py-2.5">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -291,16 +293,18 @@ export function SuperadminPanel({
                     u.role === "superadmin" || u.id === currentUserId;
                   return (
                     <tr key={u.id} className="border-t border-slate-200">
-                      <td className="px-3 py-2 font-mono">{u.username}</td>
-                      <td className="px-3 py-2">{u.name}</td>
-                      <td className="px-3 py-2">{u.role_label}</td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2.5 font-mono text-base">
+                        {u.username}
+                      </td>
+                      <td className="px-3 py-2.5 text-base">{u.name}</td>
+                      <td className="px-3 py-2.5 text-base">{u.role_label}</td>
+                      <td className="px-3 py-2.5">
                         {locked ? (
-                          <span className="text-sm text-slate-500">—</span>
+                          <span className="text-base text-slate-500">—</span>
                         ) : (
                           <button
                             type="button"
-                            className={`${btnDanger} !px-3 !py-1.5 text-sm`}
+                            className={`${btnDanger} ${btnRow}`}
                             onClick={() => deactivate(u.id)}
                           >
                             Nonaktifkan

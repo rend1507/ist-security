@@ -71,7 +71,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
     return (
       <>
         <div className="rounded-lg bg-slate-800/80 p-2">
-          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
             Menu
           </p>
           <div className="flex flex-col gap-1.5">
@@ -93,7 +93,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
 
         {(canChangeOwnPin(user.role) || showSettings) && (
           <div className="rounded-lg bg-slate-800/80 p-2">
-            <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <p className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-slate-400">
               Akun
             </p>
             <div className="flex flex-col gap-1.5">
@@ -131,11 +131,11 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen bg-slate-100 font-sans text-base text-slate-900">
       <div className="flex min-h-screen">
         <aside className="hidden w-60 shrink-0 flex-col bg-slate-900 text-slate-100 md:flex">
           <div className="border-b border-slate-700 px-4 py-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">
               PT Indonesia Smelting Technology
             </p>
             <p className="mt-1 text-xl font-bold tracking-tight">IST Security</p>
@@ -143,7 +143,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
           <nav className="flex flex-1 flex-col gap-3 p-3">
             <NavLinks />
           </nav>
-          <div className="border-t border-slate-700 p-3 text-sm text-slate-300">
+          <div className="border-t border-slate-700 p-3 text-base text-slate-300">
             <p className="font-semibold text-white">{user.name}</p>
             <p>{user.role_label}</p>
           </div>
@@ -161,10 +161,10 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
                 <IconMenu />
               </button>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold tracking-tight sm:text-xl md:text-2xl">
+                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
                   {title}
                 </h1>
-                <p className="text-sm text-slate-600 md:hidden">
+                <p className="text-base text-slate-700 md:hidden">
                   {user.name} · {user.role_label}
                 </p>
               </div>
@@ -172,7 +172,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
             <div className="flex items-center justify-between gap-3 sm:justify-end sm:gap-4">
               <HeaderClock />
               <div className="flex items-center gap-2 border-l-2 border-slate-200 pl-3 sm:gap-3 sm:pl-4">
-                <span className="hidden font-mono text-sm font-semibold text-slate-700 sm:inline">
+                <span className="hidden font-mono text-base font-semibold text-slate-700 sm:inline">
                   {user.username}
                 </span>
                 <LogoutButton />
@@ -209,7 +209,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
             <nav className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
               <NavLinks onNavigate={() => setMenuOpen(false)} />
             </nav>
-            <div className="border-t border-slate-700 p-3 text-sm text-slate-300">
+            <div className="border-t border-slate-700 p-3 text-base text-slate-300">
               <p className="font-semibold text-white">{user.name}</p>
               <p>{user.role_label}</p>
             </div>

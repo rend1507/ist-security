@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { IconGive, IconTake } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
 import { normalizeScanOrCode } from "@/lib/scan-token";
-import { btnCancel, btnPrimary, btnSuccess, toolbarGroup } from "@/lib/ui";
+import {
+  alertError,
+  alertOk,
+  btnCancel,
+  btnPrimary,
+  btnSuccess,
+  textLabel,
+  toolbarGroup,
+} from "@/lib/ui";
 
 type Borrower = {
   id: number;
@@ -311,23 +319,23 @@ export function KeyTransactionPanel({
           <div className="space-y-3">
             <div>
               {fromScan && detectedCode ? (
-                <div className="rounded-md border-2 border-emerald-400 bg-emerald-50 px-3 py-3">
-                  <p className="text-sm font-semibold text-emerald-900">
+                <div className="rounded-md border-2 border-emerald-500 bg-emerald-50 px-3 py-3">
+                  <p className="text-base font-bold text-emerald-950">
                     Kunci terdeteksi (QR)
                   </p>
-                  <p className="mt-1 font-mono text-xl font-bold text-emerald-950">
+                  <p className="mt-1 font-mono text-2xl font-bold text-emerald-950">
                     {detectedCode}
                   </p>
                   <button
                     type="button"
                     onClick={clearScanLock}
-                    className="mt-2 text-sm font-semibold text-blue-800 underline"
+                    className="mt-2 text-base font-semibold text-blue-800 underline"
                   >
                     Batalkan scan — isi kode manual
                   </button>
                 </div>
               ) : (
-                <label className="block text-sm font-semibold text-slate-800">
+                <label className={textLabel}>
                   Kode kunci (manual)
                   <input
                     value={keyCode}
@@ -344,7 +352,7 @@ export function KeyTransactionPanel({
                   <button
                     type="button"
                     onClick={startScan}
-                    className="rounded-md border-2 border-slate-400 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                    className="min-h-12 rounded-md border-2 border-slate-400 bg-slate-50 px-4 py-2.5 text-base font-semibold text-slate-800 hover:bg-slate-100"
                   >
                     Scan QR
                   </button>
@@ -352,14 +360,16 @@ export function KeyTransactionPanel({
                   <button
                     type="button"
                     onClick={stopScan}
-                    className="rounded-md border-2 border-rose-300 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800"
+                    className="min-h-12 rounded-md border-2 border-rose-400 bg-rose-50 px-4 py-2.5 text-base font-semibold text-rose-900"
                   >
                     Hentikan kamera
                   </button>
                 )}
               </div>
               {scanHint && (
-                <p className="mt-2 text-sm text-amber-900">{scanHint}</p>
+                <p className="mt-2 text-base font-semibold text-amber-950">
+                  {scanHint}
+                </p>
               )}
               {scanning && (
                 <video
@@ -372,14 +382,14 @@ export function KeyTransactionPanel({
             </div>
 
             {mode === "take" && (
-              <div className="space-y-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 p-3">
-                <p className="text-sm font-bold uppercase tracking-wide text-emerald-950">
+              <div className="space-y-2 rounded-lg border-2 border-emerald-600 bg-emerald-50 p-3">
+                <p className="text-base font-bold text-emerald-950">
                   Nama peminjam
                 </p>
-                <p className="text-sm text-emerald-900">
+                <p className="text-base text-emerald-950">
                   Pilih dari daftar, atau centang di bawah jika nama baru.
-                  Daftar lengkap juga ada di menu{" "}
-                  <span className="font-semibold">Data peminjam</span>.
+                  Daftar lengkap juga di menu{" "}
+                  <span className="font-bold">Data peminjam</span>.
                 </p>
                 <label className="block text-base font-semibold text-slate-900">
                   Cari peminjam
@@ -450,7 +460,7 @@ export function KeyTransactionPanel({
             <div className="rounded-lg border-2 border-blue-600 bg-blue-50 p-3">
               <label className="block text-base font-bold text-blue-950">
                 PIN 6 angka (wajib tiap aksi)
-                <span className="mt-0.5 block text-sm font-semibold text-blue-800">
+                <span className="mt-1 block text-base font-semibold text-blue-900">
                   Bukan password login. Hanya angka, contoh demo: 123456
                 </span>
                 <input
@@ -468,16 +478,8 @@ export function KeyTransactionPanel({
               </label>
             </div>
 
-            {error && (
-              <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800">
-                {error}
-              </p>
-            )}
-            {msg && (
-              <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-                {msg}
-              </p>
-            )}
+            {error && <p className={alertError}>{error}</p>}
+            {msg && <p className={alertOk}>{msg}</p>}
 
             <div className="flex flex-wrap gap-2">
               <button

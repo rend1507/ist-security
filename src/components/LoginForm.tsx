@@ -81,8 +81,8 @@ export function LoginForm() {
         </button>
       </form>
 
-      <div className="rounded-md border-2 border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-700">
-        <p className="font-semibold text-slate-800">Akun uji (demo)</p>
+      <div className="rounded-md border-2 border-slate-300 bg-slate-50 px-3 py-3 text-base text-slate-700">
+        <p className="font-bold text-slate-900">Akun uji (demo)</p>
         <ul className="mt-2 space-y-1 font-mono text-base">
           {DEMO_ACCOUNTS.map((a) => (
             <li key={a.id}>

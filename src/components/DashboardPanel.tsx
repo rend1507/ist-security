@@ -89,24 +89,24 @@ function BarChart({
       <ul className="mt-4 space-y-3">
         {bars.map((b) => (
           <li key={b.label}>
-            <div className="mb-1 flex justify-between gap-2 text-sm font-semibold">
+            <div className="mb-1 flex justify-between gap-2 text-base font-semibold">
               <span className={b.text}>{b.label}</span>
               <span className="shrink-0 font-mono tabular-nums">
                 {b.value}
                 {total > 0 ? (
-                  <span className="ml-2 font-normal text-slate-600">
+                  <span className="ml-2 font-normal text-slate-700">
                     ({shareLabel(b.value, total)})
                   </span>
                 ) : null}
               </span>
             </div>
-            <div className="h-8 overflow-hidden rounded-md bg-slate-200">
+            <div className="h-9 overflow-hidden rounded-md bg-slate-200">
               <div
                 className={`flex h-full min-w-0 items-center ${b.color}`}
                 style={barWidthStyle(b.value, total)}
               >
                 {b.value > 0 && (
-                  <span className="truncate px-2 text-sm font-bold text-white">
+                  <span className="truncate px-2 text-base font-bold text-white">
                     {b.value}
                   </span>
                 )}
@@ -119,8 +119,8 @@ function BarChart({
         <p
           className={
             ok
-              ? "mt-3 text-sm font-semibold text-slate-700"
-              : "mt-3 text-sm font-bold text-rose-800"
+              ? "mt-3 text-base font-semibold text-slate-700"
+              : "mt-3 text-base font-bold text-rose-800"
           }
         >
           Cek jumlah: {sum} / {total}
@@ -183,12 +183,12 @@ export function DashboardPanel({
     <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-wrap items-center gap-2">
         {stats && stats.overdue > 0 && (
-          <span className="rounded-md bg-rose-200 px-2.5 py-1.5 text-sm font-bold text-rose-900">
+          <span className="rounded-md bg-rose-200 px-3 py-2 text-base font-bold text-rose-950">
             {stats.overdue} terlambat
           </span>
         )}
         {stats && (
-          <span className="rounded-md border-2 border-slate-300 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-800">
+          <span className="rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-base font-semibold text-slate-800">
             Batas terlambat:{" "}
             <span className="font-mono">{stats.defaultOverdueMinutes}</span> mnt
           </span>
@@ -204,43 +204,43 @@ export function DashboardPanel({
 
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         <div className="rounded-lg border-2 border-slate-300 bg-white px-3 py-3.5 sm:px-4 sm:py-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-600 sm:text-sm">
+          <p className="text-sm font-bold uppercase tracking-wide text-slate-700">
             Total kunci
           </p>
-          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
+          <p className="mt-2 font-mono text-3xl font-bold tabular-nums sm:text-4xl">
             {stats?.total ?? "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-emerald-400 bg-emerald-50 px-3 py-3.5 text-emerald-950 sm:px-4 sm:py-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-emerald-800 sm:text-sm">
+        <div className="rounded-lg border-2 border-emerald-500 bg-emerald-50 px-3 py-3.5 text-emerald-950 sm:px-4 sm:py-5">
+          <p className="text-sm font-bold uppercase tracking-wide text-emerald-900">
             Siap dipinjam
           </p>
-          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
+          <p className="mt-2 font-mono text-3xl font-bold tabular-nums sm:text-4xl">
             {stats ? siap : "—"}
           </p>
-          <p className="mt-1 font-mono text-sm font-semibold">
+          <p className="mt-1 font-mono text-base font-semibold">
             {stats ? shareLabel(siap, stats.total) : "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-amber-400 bg-amber-50 px-3 py-3.5 text-amber-950 sm:px-4 sm:py-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-amber-900 sm:text-sm">
+        <div className="rounded-lg border-2 border-amber-500 bg-amber-50 px-3 py-3.5 text-amber-950 sm:px-4 sm:py-5">
+          <p className="text-sm font-bold uppercase tracking-wide text-amber-950">
             Masih dibawa
           </p>
-          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
+          <p className="mt-2 font-mono text-3xl font-bold tabular-nums sm:text-4xl">
             {stats?.outOnly ?? "—"}
           </p>
-          <p className="mt-1 font-mono text-sm font-semibold">
+          <p className="mt-1 font-mono text-base font-semibold">
             {stats ? shareLabel(stats.outOnly, stats.total) : "—"}
           </p>
         </div>
-        <div className="rounded-lg border-2 border-rose-400 bg-rose-50 px-3 py-3.5 text-rose-950 sm:px-4 sm:py-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-rose-900 sm:text-sm">
+        <div className="rounded-lg border-2 border-rose-500 bg-rose-50 px-3 py-3.5 text-rose-950 sm:px-4 sm:py-5">
+          <p className="text-sm font-bold uppercase tracking-wide text-rose-950">
             Terlambat
           </p>
-          <p className="mt-1.5 font-mono text-3xl font-bold tabular-nums sm:mt-2 sm:text-4xl">
+          <p className="mt-2 font-mono text-3xl font-bold tabular-nums sm:text-4xl">
             {stats?.overdue ?? "—"}
           </p>
-          <p className="mt-1 font-mono text-sm font-semibold">
+          <p className="mt-1 font-mono text-base font-semibold">
             {stats ? shareLabel(stats.overdue, stats.total) : "—"}
           </p>
         </div>
@@ -294,7 +294,7 @@ export function DashboardPanel({
                     <span className="font-mono font-bold">{r.code}</span>{" "}
                     <span className="text-slate-600">{r.jenis}</span>
                     {r.peminjam && r.peminjam !== "—" ? (
-                      <span className="mt-0.5 block text-sm text-slate-600">
+                      <span className="mt-0.5 block text-base text-slate-700">
                         {r.peminjam}
                       </span>
                     ) : null}
@@ -315,7 +315,7 @@ export function DashboardPanel({
           <h2 className="text-base font-bold text-slate-900">
             Belum dikembalikan
           </h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-base text-slate-600">
             Durasi update tiap detik
           </p>
           {!stats?.notBack.length ? (
@@ -333,10 +333,10 @@ export function DashboardPanel({
                 >
                   <span className="min-w-0">
                     <span className="font-mono text-lg font-bold">{r.code}</span>
-                    <span className="mt-0.5 block text-sm text-slate-700">
+                    <span className="mt-0.5 block text-base text-slate-700">
                       {r.jenis}
                     </span>
-                    <span className="mt-0.5 block text-sm font-semibold text-slate-800">
+                    <span className="mt-0.5 block text-base font-semibold text-slate-800">
                       {r.peminjam}
                     </span>
                   </span>

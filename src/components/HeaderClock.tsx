@@ -34,11 +34,11 @@ export function HeaderClock() {
       className="min-w-0 text-left leading-tight sm:text-right"
       title="Waktu Asia/Jakarta"
     >
-      <p className="text-xs font-semibold capitalize text-slate-800 sm:text-sm">
+      <p className="text-sm font-semibold capitalize text-slate-800">
         {hari}
       </p>
-      <p className="text-xs text-slate-600 sm:text-sm">{tanggal}</p>
-      <p className="font-mono text-sm font-bold tabular-nums text-slate-900 sm:text-base">
+      <p className="text-sm text-slate-700">{tanggal}</p>
+      <p className="font-mono text-base font-bold tabular-nums text-slate-900">
         {jam}
       </p>
     </div>

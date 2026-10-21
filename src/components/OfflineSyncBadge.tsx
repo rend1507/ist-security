@@ -24,9 +24,9 @@ export function OfflineSyncBadge() {
   if (pending === 0 && !msg) return null;
 
   return (
-    <div className="flex items-center gap-2 text-xs">
+    <div className="flex flex-wrap items-center gap-2 text-base">
       {pending > 0 && (
-        <span className="rounded bg-amber-100 px-2 py-0.5 font-medium text-amber-900">
+        <span className="rounded-md border-2 border-amber-400 bg-amber-100 px-2.5 py-1.5 font-semibold text-amber-950">
           Belum terkirim: {pending}
         </span>
       )}
@@ -34,12 +34,12 @@ export function OfflineSyncBadge() {
         <button
           type="button"
           onClick={onFlush}
-          className="text-blue-600 hover:underline"
+          className="font-semibold text-blue-800 underline"
         >
           Kirim sekarang
         </button>
       )}
-      {msg && <span className="text-slate-500">{msg}</span>}
+      {msg && <span className="font-semibold text-slate-700">{msg}</span>}
     </div>
   );
 }

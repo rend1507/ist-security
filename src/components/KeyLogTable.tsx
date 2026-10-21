@@ -197,8 +197,8 @@ export function KeyLogTable({
   return (
     <>
       <div className="-mx-1 overflow-x-auto rounded-lg border-2 border-slate-300 bg-white sm:mx-0">
-        <table className="min-w-full text-left text-sm sm:text-base">
-          <thead className="bg-slate-200 text-xs font-bold uppercase tracking-wide text-slate-800 sm:text-sm">
+        <table className="min-w-full text-left text-base">
+          <thead className="bg-slate-200 text-sm font-bold uppercase tracking-wide text-slate-800">
             <tr>
               {COLUMNS.map((col) => {
                 const active = sortKey === col.key;
@@ -215,7 +215,7 @@ export function KeyLogTable({
                         className={`inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-slate-950 ${col.center ? "justify-center" : ""}`}
                       >
                         {col.label}
-                        <span className="text-[10px] opacity-80">
+                        <span className="text-xs opacity-80" aria-hidden>
                           {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
                         </span>
                       </button>
@@ -296,7 +296,7 @@ export function KeyLogTable({
                       {r.jenis}
                     </td>
                     <td
-                      className={`px-2 py-2.5 font-mono text-sm sm:px-3 ${cellHide(true)} ${baseCell}`}
+                      className={`px-2 py-2.5 font-mono text-base sm:px-3 ${cellHide(true)} ${baseCell}`}
                     >
                       <button
                         type="button"
@@ -312,18 +312,18 @@ export function KeyLogTable({
                     >
                       <span className="line-clamp-2">{r.peminjam}</span>
                       {shouldShowDivisi(r.peminjam, r.divisi) ? (
-                        <span className="block text-xs font-normal text-slate-700 sm:text-sm">
+                        <span className="mt-0.5 block text-base font-normal text-slate-700">
                           {r.divisi}
                         </span>
                       ) : null}
                     </td>
                     <td
-                      className={`px-2 py-2.5 font-mono text-xs sm:px-3 sm:text-sm ${cellHide(true)} ${baseCell}`}
+                      className={`px-2 py-2.5 font-mono text-base sm:px-3 ${cellHide(true)} ${baseCell}`}
                     >
                       {fmtTime(r.take_out)}
                     </td>
                     <td
-                      className={`px-2 py-2.5 font-mono text-xs sm:px-3 sm:text-sm ${cellHide(true)} ${baseCell}`}
+                      className={`px-2 py-2.5 font-mono text-base sm:px-3 ${cellHide(true)} ${baseCell}`}
                     >
                       {fmtTime(r.give_back)}
                     </td>
@@ -331,13 +331,13 @@ export function KeyLogTable({
                       className={`px-2 py-2.5 text-center sm:px-3 ${baseCell}`}
                     >
                       <span
-                        className={`inline-block rounded px-2 py-1 text-xs font-bold sm:text-sm ${statusBadgeClass(r.status)}`}
+                        className={`inline-block rounded px-2.5 py-1 text-sm font-bold ${statusBadgeClass(r.status)}`}
                       >
                         {statusLabel(r.status)}
                       </span>
                     </td>
                     <td
-                      className={`px-2 py-2.5 font-mono text-sm font-semibold tabular-nums sm:px-3 ${lamaCell}`}
+                      className={`px-2 py-2.5 font-mono text-base font-semibold tabular-nums sm:px-3 ${lamaCell}`}
                     >
                       {r.take_out &&
                       (r.status === "out" ||
