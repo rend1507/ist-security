@@ -15,6 +15,7 @@ import {
   tableHead,
   tableShell,
   textLabel,
+  toolbarGroup,
 } from "@/lib/ui";
 
 type BorrowerRow = {
@@ -141,7 +142,7 @@ export function DataMasterPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className={toolbarGroup}>
         <button type="button" onClick={openAdd} className={btnSuccess}>
           <IconPlus />
           Tambah peminjam

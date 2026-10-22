@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconPlus } from "@/components/Icons";
+import { IconPlus, IconPrint } from "@/components/Icons";
 import { KeyCodesModal, type KeyCodesInfo } from "@/components/KeyCodesModal";
 import { Modal } from "@/components/Modal";
+import { PrintQrLabelsModal } from "@/components/PrintQrLabelsModal";
 import {
   alertError,
   alertOk,
@@ -12,9 +13,11 @@ import {
   btnNeutral,
   btnPrimary,
   btnRow,
+  btnSuccess,
   tableHead,
   tableShell,
   textLabel,
+  toolbarGroup,
 } from "@/lib/ui";
 
 type KeyRow = {
@@ -39,6 +42,7 @@ export function DaftarKunciPanel({
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [codesInfo, setCodesInfo] = useState<KeyCodesInfo | null>(null);
+  const [printOpen, setPrintOpen] = useState(false);
 
   const [kCode, setKCode] = useState("");
   const [kJenis, setKJenis] = useState("");
@@ -215,10 +219,19 @@ export function DaftarKunciPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className={toolbarGroup}>
         <button type="button" onClick={openAdd} className={btnNeutral}>
           <IconPlus />
           Tambah kunci
+        </button>
+        <button
+          type="button"
+          onClick={() => setPrintOpen(true)}
+          disabled={keys.length === 0}
+          className={btnSuccess}
+        >
+          <IconPrint />
+          Cetak QR (batch)
         </button>
       </div>
 
@@ -387,6 +400,18 @@ export function DaftarKunciPanel({
         <KeyCodesModal
           info={codesInfo}
           onClose={() => setCodesInfo(null)}
+        />
+      )}
+
+      {printOpen && (
+        <PrintQrLabelsModal
+          keys={keys.map((k) => ({
+            id: k.id,
+            code: k.code,
+            jenis: k.jenis,
+            barcode: k.barcode,
+          }))}
+          onClose={() => setPrintOpen(false)}
         />
       )}
     </div>

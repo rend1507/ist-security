@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { LiveDuration } from "@/components/LiveDuration";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
+import { toolbarGroup } from "@/lib/ui";
 
 type Stats = {
   total: number;
@@ -181,7 +182,7 @@ export function DashboardPanel({
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={toolbarGroup}>
         {stats && stats.overdue > 0 && (
           <span className="rounded-md bg-rose-200 px-3 py-2 text-base font-bold text-rose-950">
             {stats.overdue} terlambat

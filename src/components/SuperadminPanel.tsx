@@ -162,7 +162,7 @@ export function SuperadminPanel({
   return (
     <div className="space-y-4">
       {showUsersTab && (
-        <div className="flex flex-wrap gap-2 rounded-lg border border-slate-300 bg-slate-100 p-2">
+        <div className="flex flex-wrap gap-2 rounded-lg border-2 border-slate-300 bg-slate-100 p-2">
           <button
             type="button"
             onClick={() => setTab("overdue")}

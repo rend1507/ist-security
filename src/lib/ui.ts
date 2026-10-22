@@ -24,12 +24,15 @@ export const btnRow =
 export const pillBase =
   "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-base font-semibold transition";
 
-export const pillActive = `${pillBase} bg-blue-700 text-white`;
-export const pillIdle = `${pillBase} bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-100`;
+export const pillActive =
+  `${pillBase} border-2 border-blue-800 bg-blue-700 text-white`;
+export const pillIdle =
+  `${pillBase} border-2 border-slate-300 bg-white text-slate-800 hover:bg-slate-100`;
 
-export const pillActiveDark = `${pillBase} bg-blue-600 text-white`;
+export const pillActiveDark =
+  `${pillBase} border-2 border-blue-300 bg-blue-600 text-white`;
 export const pillIdleDark =
-  `${pillBase} text-slate-100 hover:bg-slate-800 hover:text-white`;
+  `${pillBase} border-2 border-slate-600 text-slate-100 hover:bg-slate-800 hover:text-white`;
 
 export const toolbarGroup =
   "flex flex-wrap items-center gap-2 rounded-lg border-2 border-slate-300 bg-slate-100 p-2";

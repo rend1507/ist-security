@@ -9,6 +9,7 @@ import {
   tableHead,
   tableShell,
   textLabel,
+  toolbarGroup,
 } from "@/lib/ui";
 
 type SortKey =
@@ -103,7 +104,7 @@ export function BorrowLogPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <div className={`${toolbarGroup} items-end`}>
         <label className={textLabel}>
           Dari tanggal
           <input
