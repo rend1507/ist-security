@@ -133,7 +133,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-base text-slate-900">
       <div className="flex min-h-screen">
-        <aside className="hidden w-60 shrink-0 flex-col bg-slate-900 text-slate-100 md:flex">
+        <aside className="hidden w-60 shrink-0 flex-col bg-slate-900 text-slate-100 print:hidden md:flex">
           <div className="border-b border-slate-700 px-4 py-5">
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">
               PT Indonesia Smelting Technology
@@ -150,7 +150,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex flex-col gap-3 border-b-2 border-slate-300 bg-white px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 md:px-6">
+          <header className="flex flex-col gap-3 border-b-2 border-slate-300 bg-white px-3 py-3 print:hidden sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 md:px-6">
             <div className="flex min-w-0 items-start gap-2">
               <button
                 type="button"
@@ -180,14 +180,14 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
             </div>
           </header>
 
-          <main className="flex-1 px-3 py-4 text-base sm:px-4 sm:py-6 md:px-6">
+          <main className="flex-1 px-3 py-4 text-base print:p-0 sm:px-4 sm:py-6 md:px-6">
             {children}
           </main>
         </div>
       </div>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 print:hidden md:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-slate-900/50"

@@ -41,3 +41,70 @@ select,
 textarea {
   font-size: 16px;
 }
+
+/* Cetak QR batch — halaman sama, tanpa popup */
+.qr-print-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 20mm);
+  gap: 2mm;
+  justify-content: start;
+}
+
+.qr-print-card {
+  width: 20mm;
+  height: 26mm;
+  border: 0.3mm solid #64748b;
+  border-radius: 1mm;
+  padding: 0.8mm 0.6mm 0.5mm;
+  text-align: center;
+  overflow: hidden;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.qr-print-card img {
+  width: 16mm;
+  height: 16mm;
+  display: block;
+  margin: 0 auto;
+}
+
+.qr-print-code {
+  margin: 0.5mm 0 0;
+  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-size: 6pt;
+  font-weight: 700;
+  line-height: 1.1;
+  word-break: break-all;
+}
+
+.qr-print-jenis {
+  margin: 0.2mm 0 0;
+  font-size: 4.5pt;
+  line-height: 1.1;
+  color: #334155;
+  word-break: break-word;
+  max-height: 5mm;
+  overflow: hidden;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 6mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .qr-print-sheet {
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .qr-print-grid {
+    gap: 1.8mm;
+  }
+}

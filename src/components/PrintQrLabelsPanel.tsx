@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { IconPrint } from "@/components/Icons";
-import { Modal } from "@/components/Modal";
 import {
-  openQrLabelPrint,
+  buildQrLabels,
   type QrLabelKey,
+  type QrLabelReady,
 } from "@/lib/print-qr-labels";
 import {
   alertError,
@@ -14,23 +14,30 @@ import {
   btnSuccess,
   textBody,
   textLabel,
+  toolbarGroup,
 } from "@/lib/ui";
 
 type KeyOption = QrLabelKey & { id: number };
 
-export function PrintQrLabelsModal({
+/**
+ * Cetak QR di halaman yang sama (bukan popup).
+ * Pilih kunci → tampilkan label → Cetak / simpan PDF · Kembali.
+ */
+export function PrintQrLabelsPanel({
   keys,
-  onClose,
+  onBack,
 }: {
   keys: KeyOption[];
-  onClose: () => void;
+  onBack: () => void;
 }) {
+  const [phase, setPhase] = useState<"select" | "preview">("select");
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(keys.map((k) => k.id))
   );
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [labels, setLabels] = useState<QrLabelReady[]>([]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toUpperCase();
@@ -66,23 +73,80 @@ export function PrintQrLabelsModal({
     });
   }
 
-  async function onPrint() {
+  async function goPreview() {
     setError(null);
     setBusy(true);
     try {
       const chosen = keys.filter((k) => selected.has(k.id));
-      await openQrLabelPrint(chosen);
+      const ready = await buildQrLabels(chosen);
+      setLabels(ready);
+      setPhase("preview");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal membuka cetak");
+      setError(e instanceof Error ? e.message : "Gagal menyiapkan QR");
     } finally {
       setBusy(false);
     }
   }
 
+  if (phase === "preview") {
+    return (
+      <div className="space-y-4">
+        <div className={`${toolbarGroup} print:hidden`}>
+          <button type="button" onClick={() => setPhase("select")} className={btnCancel}>
+            Kembali
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className={btnPrimary}
+          >
+            <IconPrint />
+            Cetak / simpan PDF
+          </button>
+          <p className="text-base font-semibold text-slate-700">
+            {labels.length} label · kartu 20×26 mm · QR 16 mm
+          </p>
+        </div>
+
+        <div id="qr-print-root" className="qr-print-sheet rounded-lg border-2 border-slate-300 bg-white p-3 print:border-0 print:p-0">
+          <div className="qr-print-grid">
+            {labels.map((l) => (
+              <article key={`${l.code}-${l.barcode}`} className="qr-print-card">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={l.dataUrl} alt={`QR ${l.code}`} width={256} height={256} />
+                <p className="qr-print-code">{l.code}</p>
+                <p className="qr-print-jenis">{l.jenis || "—"}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Modal title="Cetak QR kunci (batch)" onClose={onClose} wide>
+    <div className="space-y-4">
+      <div className={toolbarGroup}>
+        <button type="button" onClick={onBack} className={btnCancel}>
+          Kembali
+        </button>
+        <button
+          type="button"
+          disabled={busy || selected.size === 0}
+          onClick={() => void goPreview()}
+          className={btnPrimary}
+        >
+          <IconPrint />
+          {busy ? "Menyiapkan…" : "Tampilkan label"}
+        </button>
+        <p className="text-base font-semibold text-slate-700">
+          Terpilih: {selected.size} / {keys.length}
+        </p>
+      </div>
+
       <p className={textBody}>
-        Pilih beberapa atau semua, lalu cetak / simpan PDF.
+        Pilih beberapa atau semua, lalu tampilkan label di halaman ini (tanpa
+        popup).
       </p>
 
       <label className={textLabel}>
@@ -102,14 +166,13 @@ export function PrintQrLabelsModal({
           onClick={toggleAllFiltered}
           disabled={filtered.length === 0}
         >
-          {allFilteredSelected ? "Hapus pilihan (daftar ini)" : "Pilih semua (daftar ini)"}
+          {allFilteredSelected
+            ? "Hapus pilihan (daftar ini)"
+            : "Pilih semua (daftar ini)"}
         </button>
-        <p className="text-base font-semibold text-slate-700">
-          Terpilih: {selected.size} / {keys.length}
-        </p>
       </div>
 
-      <ul className="max-h-72 overflow-auto rounded-md border-2 border-slate-300 bg-white">
+      <ul className="max-h-[min(28rem,60vh)] overflow-auto rounded-md border-2 border-slate-300 bg-white">
         {filtered.length === 0 ? (
           <li className="px-3 py-4 text-base text-slate-500">
             Tidak ada kunci yang cocok.
@@ -137,21 +200,6 @@ export function PrintQrLabelsModal({
       </ul>
 
       {error && <p className={alertError}>{error}</p>}
-
-      <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          type="button"
-          disabled={busy || selected.size === 0}
-          onClick={() => void onPrint()}
-          className={btnPrimary}
-        >
-          <IconPrint />
-          {busy ? "Menyiapkan…" : "Cetak / simpan PDF"}
-        </button>
-        <button type="button" onClick={onClose} className={btnCancel}>
-          Tutup
-        </button>
-      </div>
-    </Modal>
+    </div>
   );
 }

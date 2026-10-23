@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { IconPlus, IconPrint } from "@/components/Icons";
 import { KeyCodesModal, type KeyCodesInfo } from "@/components/KeyCodesModal";
 import { Modal } from "@/components/Modal";
-import { PrintQrLabelsModal } from "@/components/PrintQrLabelsModal";
+import { PrintQrLabelsPanel } from "@/components/PrintQrLabelsPanel";
 import {
   alertError,
   alertOk,
@@ -217,6 +217,20 @@ export function DaftarKunciPanel({
     }
   }
 
+  if (printOpen) {
+    return (
+      <PrintQrLabelsPanel
+        keys={keys.map((k) => ({
+          id: k.id,
+          code: k.code,
+          jenis: k.jenis,
+          barcode: k.barcode,
+        }))}
+        onBack={() => setPrintOpen(false)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className={toolbarGroup}>
@@ -403,17 +417,6 @@ export function DaftarKunciPanel({
         />
       )}
 
-      {printOpen && (
-        <PrintQrLabelsModal
-          keys={keys.map((k) => ({
-            id: k.id,
-            code: k.code,
-            jenis: k.jenis,
-            barcode: k.barcode,
-          }))}
-          onClose={() => setPrintOpen(false)}
-        />
-      )}
     </div>
   );
 }
