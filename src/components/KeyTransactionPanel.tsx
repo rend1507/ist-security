@@ -221,13 +221,17 @@ export function KeyTransactionPanel({
       const raw = await detectQrFromFile(file);
       if (!raw) {
         setScanHint(
-          "QR tidak terbaca di foto. Ambil ulang (lebih dekat, cahaya cukup) atau isi kode manual."
+          "QR belum terbaca. Dekatkan label, cahaya cukup, isi frame dengan QR saja — atau ketik kode manual."
         );
         return;
       }
       await applyScannedRaw(raw);
     } catch (err) {
-      uiAlert(setError, "Gagal membaca foto QR. Coba lagi.", err);
+      const detail =
+        err instanceof Error && err.message
+          ? err.message
+          : "Gagal membaca foto QR. Coba JPEG/PNG atau Scan QR.";
+      setError(detail);
     } finally {
       setPhotoBusy(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -391,8 +395,7 @@ export function KeyTransactionPanel({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
-                  capture="environment"
+                  accept="image/jpeg,image/png,image/webp,image/*"
                   className="sr-only"
                   onChange={(e) =>
                     void onPhotoSelected(e.target.files?.[0] ?? null)
