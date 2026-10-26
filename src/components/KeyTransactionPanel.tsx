@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconGive, IconTake } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import { normalizeScanOrCode } from "@/lib/scan-token";
 import {
   alertError,
@@ -151,7 +152,7 @@ export function KeyTransactionPanel({
         error?: string;
       };
       if (!json.ok || !json.data) {
-        setError(json.error || "QR tidak dikenali sebagai kunci.");
+        uiApiAlert(setError, "QR tidak dikenali.", res, json);
         setFromScan(false);
         setDetectedCode(null);
         return;
@@ -160,8 +161,8 @@ export function KeyTransactionPanel({
       setFromScan(true);
       setMsg(`Kunci ${json.data.code} terdeteksi dari QR.`);
       setError(null);
-    } catch {
-      setError("Gagal mengenali QR. Coba lagi atau isi kode manual.");
+    } catch (err) {
+      uiAlert(setError, "Gagal mengenali QR. Coba lagi.", err);
     }
   }
 
@@ -257,7 +258,7 @@ export function KeyTransactionPanel({
           data?: { keyCode: string; takeOutAt: string; borrower: string };
         };
         if (!json.ok) {
-          setError(json.error || "Gagal mencatat pinjam.");
+          uiApiAlert(setError, UI_MSG.generic, res, json);
           return;
         }
         setMsg(
@@ -275,15 +276,15 @@ export function KeyTransactionPanel({
           data?: { keyCode: string };
         };
         if (!json.ok) {
-          setError(json.error || "Gagal mencatat pengembalian.");
+          uiApiAlert(setError, UI_MSG.generic, res, json);
           return;
         }
         setMsg(`Kunci ${json.data?.keyCode} sudah dicatat kembali.`);
       }
       setPin("");
       router.refresh();
-    } catch {
-      setError("Tidak bisa terhubung. Coba lagi.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     } finally {
       setLoading(false);
     }

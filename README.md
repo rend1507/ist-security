@@ -49,7 +49,18 @@ Super Admin tetap di database (login manual); tidak ditampilkan di daftar akun u
 
 Seed kunci: **SEC1–SEC46** (dari Excel).
 
+## Keamanan
+
+Lihat **[docs/security.md](docs/security.md)** — hardening defensif (sesi, sync auth, rate-limit login, header, no source map).
+
+```bash
+npx wrangler secret put SESSION_SECRET   # ≥24 karakter acak
+npm run db:migrate:remote                # termasuk login_rate_limit
+```
+
+Anti-RE 100% pada bundle browser **tidak realistis**; secret & otorisasi hanya di server.
+
 ## Catatan
 
-- Pakai akun Cloudflare yang sudah diverifikasi untuk proyek ini.
+- Pakai akun Cloudflare yang sudah diverifikasi untuk proyek ini (**umrplku**).
 - Jangan commit `.env` / `.dev.vars` / secret.

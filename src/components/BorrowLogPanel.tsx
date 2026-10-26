@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
   btnPrimary,
@@ -58,13 +59,13 @@ export function BorrowLogPanel() {
         error?: string;
       };
       if (!json.ok || !json.data) {
-        setError(json.error || "Gagal memuat log");
+        uiApiAlert(setError, UI_MSG.load, res, json);
         setRows([]);
         return;
       }
       setRows(json.data.rows);
-    } catch {
-      setError("Tidak bisa terhubung.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
       setRows([]);
     } finally {
       setLoading(false);

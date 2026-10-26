@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/Modal";
 import { MAX_EDITS } from "@/lib/domain";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import { btnCancel, btnPrimary } from "@/lib/ui";
 
 function toDatetimeLocal(sql: string | null): string {
@@ -68,13 +69,13 @@ export function EditTimeModal({
         data?: { remaining: number };
       };
       if (!json.ok) {
-        setError(json.error || "Gagal mengubah jam.");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       router.refresh();
       onClose();
-    } catch {
-      setError("Tidak bisa terhubung.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     } finally {
       setLoading(false);
     }

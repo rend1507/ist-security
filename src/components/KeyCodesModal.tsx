@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { Modal } from "@/components/Modal";
+import { uiAlert } from "@/lib/public-error";
 import { alertError, btnNeutral, textMuted } from "@/lib/ui";
 
 export type KeyCodesInfo = {
@@ -35,9 +36,7 @@ export function KeyCodesModal({
         }
       } catch (e) {
         if (!cancelled) {
-          setError(
-            e instanceof Error ? e.message : "Gagal menampilkan QR"
-          );
+          uiAlert(setError, "Gagal menampilkan QR.", e);
         }
       }
     }

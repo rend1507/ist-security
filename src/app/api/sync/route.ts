@@ -1,4 +1,7 @@
+import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
+import { UI_MSG, jsonPublicErr } from "@/lib/public-error";
+import { canTransact } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +15,18 @@ type SyncItem = {
 
 /**
  * Offline → D1: terima antrian client, simpan ke sync_queue, terapkan borrow_log bila lengkap.
+ * Wajib sesi login (cookie HttpOnly) — jangan terima sync anonim.
  */
 export async function POST(req: Request) {
+  const user = await requireUser();
+  if (user instanceof Response) return user;
+  if (!canTransact(user.role)) {
+    return jsonErr("Akun ini tidak boleh sync transaksi.", 403);
+  }
+
   try {
     const body = (await req.json()) as { clientId?: string; items?: SyncItem[] };
-    const clientId = body.clientId?.trim() || "unknown";
+    const clientId = body.clientId?.trim() || `user-${user.id}`;
     const items = Array.isArray(body.items) ? body.items : [];
     if (items.length === 0) return jsonOk({ appliedIds: [] as string[] });
 
@@ -137,7 +147,6 @@ export async function POST(req: Request) {
 
     return jsonOk({ appliedIds });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "sync gagal";
-    return jsonErr(msg, 500);
+    return jsonPublicErr(e, 500, UI_MSG.generic);
   }
 }

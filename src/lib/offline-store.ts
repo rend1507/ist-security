@@ -87,6 +87,7 @@ export async function flushSyncQueue(): Promise<{
     const res = await fetch("/api/sync", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({ clientId: getClientId(), items }),
     });
     const json = (await res.json()) as {

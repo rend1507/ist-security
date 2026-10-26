@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   },
   description:
     "Platform operasional divisi Security — PT. Indonesia Smelting Technology",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

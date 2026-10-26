@@ -1,0 +1,13 @@
+# Jangan indeks secret / env ke Agent Cursor
+.env
+.env.*
+.dev.vars
+.deploy-session-secret
+**/*.pem
+**/*.key
+**/credentials.json
+**/secrets.json
+.wrangler/
+.open-next/
+.next/
+node_modules/

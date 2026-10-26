@@ -72,6 +72,11 @@ export function canManageUsers(role: string): boolean {
   return role === "superadmin";
 }
 
+/** Log masuk / keluar (audit) — hanya Super Admin */
+export function canViewSessionLogs(role: string): boolean {
+  return role === "superadmin";
+}
+
 /** Akun uji di layar Login — Super Admin sengaja tidak ditampilkan. */
 export const DEMO_ACCOUNTS = [
   { id: "sec01", role: "Petugas Security" },

@@ -141,6 +141,27 @@ export function IconClock({ className = base }: IconProps) {
   );
 }
 
+/** Log masuk / keluar */
+export function IconDoor({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 21V5a2 2 0 0 1 2-2h8v18H6a2 2 0 0 1-2-2Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 3h4a2 2 0 0 1 2 2v16h-6M10 12h.01"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconMenu({ className = base }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>

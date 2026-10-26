@@ -7,6 +7,7 @@ import {
   type QrLabelKey,
   type QrLabelReady,
 } from "@/lib/print-qr-labels";
+import { uiAlert } from "@/lib/public-error";
 import {
   alertError,
   btnCancel,
@@ -82,7 +83,7 @@ export function PrintQrLabelsPanel({
       setLabels(ready);
       setPhase("preview");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal menyiapkan QR");
+      uiAlert(setError, "Gagal menyiapkan QR.", e);
     } finally {
       setBusy(false);
     }

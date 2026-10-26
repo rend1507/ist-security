@@ -2,6 +2,16 @@ import { getDb, getEnv, jsonErr, jsonOk } from "@/lib/db";
 import { setSessionCookie, signSession } from "@/lib/auth";
 import { verifyPassword } from "@/lib/password";
 import { ROLE_LABELS, canLogin, type Role } from "@/lib/roles";
+import { resolveSessionSecret } from "@/lib/security";
+import { UI_MSG, jsonPublicErr } from "@/lib/public-error";
+import {
+  assertLoginAllowed,
+  clearLoginFailures,
+  clientIpFromRequest,
+  loginBucket,
+  recordLoginFailure,
+} from "@/lib/rate-limit";
+import { recordSessionAccess } from "@/lib/session-logs";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +26,12 @@ export async function POST(req: Request) {
 
     if (!username) return jsonErr("Isi ID petugas / username.", 400);
     if (!password) return jsonErr("Isi password.", 400);
+
+    const bucket = loginBucket(clientIpFromRequest(req), username);
+    const gate = await assertLoginAllowed(bucket);
+    if (!gate.ok) {
+      return jsonPublicErr(gate.error, 429, UI_MSG.loginLock);
+    }
 
     const db = await getDb();
     const row = await db
@@ -34,15 +50,35 @@ export async function POST(req: Request) {
       }>();
 
     if (!row || !canLogin(row.role)) {
-      return jsonErr("ID atau password salah.", 401);
+      await recordLoginFailure(bucket);
+      return jsonErr(UI_MSG.loginFail, 401);
     }
     const ok = await verifyPassword(password, row.password_hash);
-    if (!ok) return jsonErr("ID atau password salah.", 401);
+    if (!ok) {
+      await recordLoginFailure(bucket);
+      return jsonErr(UI_MSG.loginFail, 401);
+    }
+
+    await clearLoginFailures(bucket);
 
     const env = await getEnv();
-    const secret = env.SESSION_SECRET || "ist-security-dev-secret-change-me";
+    const secret = resolveSessionSecret(env.SESSION_SECRET);
     const token = await signSession(row.id, row.role, secret);
     await setSessionCookie(token);
+
+    try {
+      await recordSessionAccess({
+        userId: Number(row.id),
+        username: row.username,
+        name: row.name,
+        role: row.role,
+        event: "login",
+        ip: clientIpFromRequest(req),
+        userAgent: req.headers.get("user-agent"),
+      });
+    } catch {
+      /* jangan gagalkan login jika log audit gagal */
+    }
 
     return jsonOk({
       id: row.id,
@@ -53,6 +89,6 @@ export async function POST(req: Request) {
       email: row.email,
     });
   } catch (e) {
-    return jsonErr(e instanceof Error ? e.message : "Gagal masuk", 500);
+    return jsonPublicErr(e, 503, UI_MSG.loginBusy);
   }
 }

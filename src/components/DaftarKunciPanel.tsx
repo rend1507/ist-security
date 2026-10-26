@@ -1,10 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconPlus, IconPrint } from "@/components/Icons";
 import { KeyCodesModal, type KeyCodesInfo } from "@/components/KeyCodesModal";
 import { Modal } from "@/components/Modal";
+import {
+  PAGE_SIZE_OPTIONS,
+  PaginationBar,
+  type PageSizeOption,
+} from "@/components/PaginationBar";
 import { PrintQrLabelsPanel } from "@/components/PrintQrLabelsPanel";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
   alertOk,
@@ -43,11 +49,20 @@ export function DaftarKunciPanel({
   const [formOpen, setFormOpen] = useState(false);
   const [codesInfo, setCodesInfo] = useState<KeyCodesInfo | null>(null);
   const [printOpen, setPrintOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSizeOption>(20);
 
   const [kCode, setKCode] = useState("");
   const [kJenis, setKJenis] = useState("");
   const [kOverdue, setKOverdue] = useState("");
   const [editKeyId, setEditKeyId] = useState<number | null>(null);
+
+  const pageCount = Math.max(1, Math.ceil(keys.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pagedKeys = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return keys.slice(start, start + pageSize);
+  }, [keys, safePage, pageSize]);
 
   const load = useCallback(async () => {
     setError(null);
@@ -58,10 +73,13 @@ export function DaftarKunciPanel({
         data?: KeyRow[];
         error?: string;
       };
-      if (!json.ok) throw new Error(json.error || "Gagal memuat kunci");
+      if (!json.ok) {
+        uiApiAlert(setError, UI_MSG.load, res, json);
+        return;
+      }
       setKeys(json.data ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat data");
+      uiAlert(setError, UI_MSG.load, e);
     }
   }, []);
 
@@ -127,9 +145,8 @@ export function DaftarKunciPanel({
         data?: { code: string; jenis: string; barcode: string };
       };
       if (!json.ok) {
-        const err = json.error || "Gagal menyimpan";
-        setFormError(err);
-        setError(err);
+        uiApiAlert(setError, UI_MSG.save, res, json);
+        uiApiAlert(setFormError, UI_MSG.save, res, json);
         return;
       }
       const okText =
@@ -178,7 +195,7 @@ export function DaftarKunciPanel({
         data?: { code: string; jenis: string; barcode: string };
       };
       if (!json.ok) {
-        setError(json.error || "Gagal membuat ulang token");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       setMsg("QR baru dibuat.");
@@ -207,7 +224,7 @@ export function DaftarKunciPanel({
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menonaktifkan");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       setMsg("Kunci dinonaktifkan.");
@@ -273,7 +290,7 @@ export function DaftarKunciPanel({
                 </td>
               </tr>
             ) : (
-              keys.map((k) => (
+              pagedKeys.map((k) => (
                 <tr key={k.id} className="border-t border-slate-200">
                   <td className="px-3 py-2">
                     <button
@@ -339,6 +356,20 @@ export function DaftarKunciPanel({
           </tbody>
         </table>
       </div>
+
+      {keys.length > 0 && (
+        <PaginationBar
+          page={safePage}
+          pageSize={pageSize}
+          total={keys.length}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            if (!(PAGE_SIZE_OPTIONS as readonly number[]).includes(size)) return;
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
+      )}
 
       {formOpen && (
         <Modal

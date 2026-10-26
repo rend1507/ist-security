@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { LiveDuration } from "@/components/LiveDuration";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
+import { SessionAccessSummary } from "@/components/SessionAccessSummary";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import { toolbarGroup } from "@/lib/ui";
 
 type Stats = {
@@ -154,13 +156,13 @@ export function DashboardPanel({
         error?: string;
       };
       if (!json.ok || !json.data) {
-        setError(json.error || "Gagal memuat ringkasan");
+        uiApiAlert(setError, UI_MSG.load, res, json);
         return;
       }
       setStats(json.data);
       setError(null);
-    } catch {
-      setError("Tidak bisa terhubung.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     }
   }, []);
 
@@ -202,6 +204,8 @@ export function DashboardPanel({
           {error}
         </p>
       )}
+
+      {isSuperadmin && <SessionAccessSummary />}
 
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         <div className="rounded-lg border-2 border-slate-300 bg-white px-3 py-3.5 sm:px-4 sm:py-5">

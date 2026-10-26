@@ -9,6 +9,7 @@ import {
   IconChart,
   IconClock,
   IconDatabase,
+  IconDoor,
   IconKey,
   IconList,
   IconLock,
@@ -24,13 +25,14 @@ import {
   canManageMaster,
   canManageUsers,
   canSetOverdue,
+  canViewSessionLogs,
 } from "@/lib/roles";
 import {
   pillActiveDark,
   pillIdleDark,
 } from "@/lib/ui";
 
-type NavKey = "dashboard" | "keys" | "logs" | "daftar" | "master";
+type NavKey = "dashboard" | "keys" | "logs" | "daftar" | "master" | "akses";
 
 type AppShellProps = {
   title: string;
@@ -45,6 +47,7 @@ const NAV_ICONS: Record<NavKey, React.ReactNode> = {
   logs: <IconClock />,
   daftar: <IconList />,
   master: <IconDatabase />,
+  akses: <IconDoor />,
 };
 
 export function AppShell({ title, children, active, user }: AppShellProps) {
@@ -65,6 +68,9 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   nav.push({ href: "/log-kunci", label: "Log kunci", key: "logs" });
   if (canManageMaster(user.role)) {
     nav.push({ href: "/admin/master", label: "Data peminjam", key: "master" });
+  }
+  if (canViewSessionLogs(user.role)) {
+    nav.push({ href: "/log-akses", label: "Log akses", key: "akses" });
   }
 
   function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

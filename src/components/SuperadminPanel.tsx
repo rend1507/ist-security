@@ -6,6 +6,7 @@ import {
   ROLE_LABELS,
   type Role,
 } from "@/lib/roles";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
   alertOk,
@@ -67,11 +68,14 @@ export function SuperadminPanel({
           data?: UserRow[];
           error?: string;
         };
-        if (!json.ok) throw new Error(json.error || "Gagal memuat akun");
+        if (!json.ok) {
+          uiApiAlert(setError, UI_MSG.load, res, json);
+          return;
+        }
         setUsers(json.data ?? []);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat");
+      uiAlert(setError, UI_MSG.load, e);
     }
   }, [activeTab, showUsersTab]);
 
@@ -93,7 +97,7 @@ export function SuperadminPanel({
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menyimpan");
+        uiApiAlert(setError, UI_MSG.save, res, json);
         return;
       }
       setMsg("Batas terlambat disimpan. Memuat ulang…");
@@ -123,7 +127,7 @@ export function SuperadminPanel({
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menambah akun");
+        uiApiAlert(setError, UI_MSG.save, res, json);
         return;
       }
       setMsg("Akun petugas ditambahkan.");
@@ -149,7 +153,7 @@ export function SuperadminPanel({
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menonaktifkan");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       setMsg("Akun dinonaktifkan.");

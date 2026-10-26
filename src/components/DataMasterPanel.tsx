@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconPlus } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
   alertOk,
@@ -45,10 +46,13 @@ export function DataMasterPanel() {
         data?: BorrowerRow[];
         error?: string;
       };
-      if (!json.ok) throw new Error(json.error || "Gagal memuat peminjam");
+      if (!json.ok) {
+        uiApiAlert(setError, UI_MSG.load, res, json);
+        return;
+      }
       setBorrowers(json.data ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat data");
+      uiAlert(setError, UI_MSG.load, e);
     }
   }, []);
 
@@ -98,7 +102,7 @@ export function DataMasterPanel() {
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menyimpan peminjam");
+        uiApiAlert(setError, UI_MSG.save, res, json);
         return;
       }
       setMsg(
@@ -109,8 +113,8 @@ export function DataMasterPanel() {
       setFormOpen(false);
       resetForm();
       await load();
-    } catch {
-      setError("Tidak bisa terhubung.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     } finally {
       setLoading(false);
     }
@@ -130,7 +134,7 @@ export function DataMasterPanel() {
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal menonaktifkan");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       setMsg("Peminjam dinonaktifkan.");

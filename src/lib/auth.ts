@@ -1,6 +1,11 @@
 import { cookies } from "next/headers";
 import { getDb, getEnv, jsonErr } from "@/lib/db";
 import { ROLE_LABELS, canLogin, type Role } from "@/lib/roles";
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SEC,
+  resolveSessionSecret,
+} from "@/lib/security";
 
 export type SessionUser = {
   id: number;
@@ -13,8 +18,8 @@ export type SessionUser = {
 
 type Payload = { uid: number; role: string; exp: number };
 
-const COOKIE = "ist_session";
-const MAX_AGE = 60 * 60 * 12;
+const COOKIE = SESSION_COOKIE;
+const MAX_AGE = SESSION_MAX_AGE_SEC;
 
 function b64url(data: ArrayBuffer | Uint8Array | string): string {
   let bytes: Uint8Array;
@@ -95,6 +100,7 @@ export async function setSessionCookie(token: string) {
     httpOnly: true,
     path: "/",
     sameSite: "lax",
+    // Production/Workers selalu HTTPS; local `next dev` boleh non-secure.
     secure: process.env.NODE_ENV === "production",
     maxAge: MAX_AGE,
   });
@@ -105,11 +111,20 @@ export async function clearSessionCookie() {
   jar.delete(COOKIE);
 }
 
-export async function getSessionUser(): Promise<SessionUser | null> {
+export async function getSessionSecret(): Promise<string> {
   const env = await getEnv();
+  return resolveSessionSecret(env.SESSION_SECRET);
+}
+
+export async function getSessionUser(): Promise<SessionUser | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
-  const secret = env.SESSION_SECRET || "ist-security-dev-secret-change-me";
+  let secret: string;
+  try {
+    secret = await getSessionSecret();
+  } catch {
+    return null;
+  }
   const session = await verifySession(token, secret);
   if (!session) return null;
 

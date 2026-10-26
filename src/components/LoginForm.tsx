@@ -7,6 +7,7 @@ import {
   DEMO_PASSWORD,
   DEMO_PIN,
 } from "@/lib/roles";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 
 export function LoginForm() {
   const router = useRouter();
@@ -27,13 +28,13 @@ export function LoginForm() {
       });
       const json = (await res.json()) as { ok: boolean; error?: string };
       if (!json.ok) {
-        setError(json.error || "Gagal masuk.");
+        uiApiAlert(setError, UI_MSG.loginFail, res, json);
         return;
       }
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("Tidak bisa terhubung. Cek jaringan.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     } finally {
       setLoading(false);
     }

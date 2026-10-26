@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
   alertOk,
@@ -44,15 +45,15 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
         data?: { message: string };
       };
       if (!json.ok) {
-        setError(json.error || "Gagal mengubah PIN.");
+        uiApiAlert(setError, UI_MSG.generic, res, json);
         return;
       }
       setMsg(json.data?.message || "PIN diubah.");
       setCurrentPin("");
       setNewPin("");
       setConfirmPin("");
-    } catch {
-      setError("Tidak bisa terhubung.");
+    } catch (err) {
+      uiAlert(setError, UI_MSG.network, err);
     } finally {
       setLoading(false);
     }
