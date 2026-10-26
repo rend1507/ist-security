@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { IconGive, IconTake } from "@/components/Icons";
 import { Modal } from "@/components/Modal";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
+import {
+  canUseCamera,
+  detectQrFromFile,
+  detectQrFromVideo,
+} from "@/lib/qr-scan";
 import { normalizeScanOrCode } from "@/lib/scan-token";
 import {
   alertError,
@@ -29,26 +34,6 @@ function normalizeKeyCode(raw: string) {
   return normalizeScanOrCode(raw);
 }
 
-type BarcodeDetectorLike = {
-  detect: (
-    source: ImageBitmapSource
-  ) => Promise<Array<{ rawValue?: string }>>;
-};
-
-function getBarcodeDetector():
-  | (new (opts?: { formats?: string[] }) => BarcodeDetectorLike)
-  | null {
-  if (typeof window === "undefined") return null;
-  const BD = (
-    window as unknown as {
-      BarcodeDetector?: new (opts?: {
-        formats?: string[];
-      }) => BarcodeDetectorLike;
-    }
-  ).BarcodeDetector;
-  return BD ?? null;
-}
-
 export function KeyTransactionPanel({
   initialKeyCode = "",
   initialMode = null as Mode,
@@ -65,6 +50,8 @@ export function KeyTransactionPanel({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanTimer = useRef<number | null>(null);
+  const scanBusy = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [open, setOpen] = useState(Boolean(initialMode));
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -80,6 +67,7 @@ export function KeyTransactionPanel({
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanHint, setScanHint] = useState<string | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
   /** Setelah scan QR: kunci terdeteksi, input manual disembunyikan. */
   const [detectedCode, setDetectedCode] = useState<string | null>(null);
   const [fromScan, setFromScan] = useState(false);
@@ -89,6 +77,7 @@ export function KeyTransactionPanel({
       window.clearInterval(scanTimer.current);
       scanTimer.current = null;
     }
+    scanBusy.current = false;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
@@ -169,15 +158,10 @@ export function KeyTransactionPanel({
   async function startScan() {
     setError(null);
     setScanHint(null);
-    const BD = getBarcodeDetector();
-    if (!BD) {
+    if (!canUseCamera()) {
       setScanHint(
-        "Peramban ini tidak mendukung scan QR. Isi kode kunci secara manual."
+        "Kamera tidak tersedia di peramban ini (butuh HTTPS). Pakai Foto QR atau isi kode manual."
       );
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setScanHint("Kamera tidak tersedia. Isi kode kunci secara manual.");
       return;
     }
     try {
@@ -187,6 +171,9 @@ export function KeyTransactionPanel({
       });
       streamRef.current = stream;
       setScanning(true);
+      setScanHint(
+        "Arahkan kamera ke QR. Bisa di browser HP biasa (Safari/Chrome) atau ikon di layar utama."
+      );
       await new Promise((r) => requestAnimationFrame(() => r(null)));
       const video = videoRef.current;
       if (!video) {
@@ -194,29 +181,56 @@ export function KeyTransactionPanel({
         setScanHint("Kamera gagal dibuka.");
         return;
       }
+      video.setAttribute("playsinline", "true");
+      video.setAttribute("webkit-playsinline", "true");
+      video.muted = true;
       video.srcObject = stream;
       await video.play();
-      const detector = new BD({
-        formats: ["qr_code"],
-      });
+      scanBusy.current = false;
       scanTimer.current = window.setInterval(async () => {
         if (!videoRef.current || videoRef.current.readyState < 2) return;
+        if (scanBusy.current) return;
+        scanBusy.current = true;
         try {
-          const codes = await detector.detect(videoRef.current);
-          const raw = codes[0]?.rawValue;
+          const raw = await detectQrFromVideo(videoRef.current);
           if (raw) {
             stopScan();
             void applyScannedRaw(raw);
           }
         } catch {
           /* frame skip */
+        } finally {
+          scanBusy.current = false;
         }
-      }, 400);
+      }, 350);
     } catch {
       stopScan();
       setScanHint(
-        "Tidak bisa mengakses kamera. Izinkan kamera atau isi kode manual."
+        "Tidak bisa mengakses kamera. Izinkan kamera, pakai Foto QR, atau isi kode manual."
       );
+    }
+  }
+
+  async function onPhotoSelected(file: File | null) {
+    if (!file) return;
+    setError(null);
+    setScanHint(null);
+    setPhotoBusy(true);
+    stopScan();
+    try {
+      const raw = await detectQrFromFile(file);
+      if (!raw) {
+        setScanHint(
+          "QR tidak terbaca di foto. Ambil ulang (lebih dekat, cahaya cukup) atau isi kode manual."
+        );
+        return;
+      }
+      await applyScannedRaw(raw);
+    } catch (err) {
+      uiAlert(setError, "Gagal membaca foto QR. Coba lagi.", err);
+    } finally {
+      setPhotoBusy(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -366,6 +380,24 @@ export function KeyTransactionPanel({
                     Hentikan kamera
                   </button>
                 )}
+                <button
+                  type="button"
+                  disabled={photoBusy}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="min-h-12 rounded-md border-2 border-slate-400 bg-white px-4 py-2.5 text-base font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {photoBusy ? "Membaca foto…" : "Foto QR"}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="sr-only"
+                  onChange={(e) =>
+                    void onPhotoSelected(e.target.files?.[0] ?? null)
+                  }
+                />
               </div>
               {scanHint && (
                 <p className="mt-2 text-base font-semibold text-amber-950">
