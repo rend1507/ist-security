@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { DashboardPanel } from "@/components/DashboardPanel";
 import { getDashboardStats } from "@/lib/keys";
+import { canSetOverdue, canTransact } from "@/lib/roles";
 import { requirePageUser } from "@/lib/require-page-user";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,8 @@ export default async function DashboardPage() {
       <DashboardPanel
         initial={initial}
         isSuperadmin={user.role === "superadmin"}
+        canEditOverdue={canSetOverdue(user.role)}
+        canTransact={canTransact(user.role)}
       />
     </AppShell>
   );

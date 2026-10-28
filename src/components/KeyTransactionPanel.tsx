@@ -39,12 +39,15 @@ export function KeyTransactionPanel({
   initialMode = null as Mode,
   openGiveCode = null,
   onOpenGiveHandled,
+  showToolbar = true,
 }: {
   initialKeyCode?: string;
   initialMode?: Mode;
   /** Buka popup kembalikan dengan kode terisi (dari baris tabel). */
   openGiveCode?: string | null;
   onOpenGiveHandled?: () => void;
+  /** false = hanya modal (mis. dari Dashboard klik kunci). */
+  showToolbar?: boolean;
 }) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -310,16 +313,26 @@ export function KeyTransactionPanel({
 
   return (
     <div className="space-y-3">
-      <div className={toolbarGroup}>
-        <button type="button" onClick={() => start("take")} className={btnPrimary}>
-          <IconTake />
-          Catat pinjam kunci
-        </button>
-        <button type="button" onClick={() => start("give")} className={btnSuccess}>
-          <IconGive />
-          Catat kunci kembali
-        </button>
-      </div>
+      {showToolbar ? (
+        <div className={toolbarGroup}>
+          <button
+            type="button"
+            onClick={() => start("take")}
+            className={btnPrimary}
+          >
+            <IconTake />
+            Catat pinjam kunci
+          </button>
+          <button
+            type="button"
+            onClick={() => start("give")}
+            className={btnSuccess}
+          >
+            <IconGive />
+            Catat kunci kembali
+          </button>
+        </div>
+      ) : null}
 
       {open && mode && (
         <Modal

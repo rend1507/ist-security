@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { SessionUser } from "@/lib/auth";
 import { ChangePinForm } from "@/components/ChangePinForm";
 import { HeaderClock } from "@/components/HeaderClock";
@@ -20,6 +20,7 @@ import {
 import { LogoutButton } from "@/components/LogoutButton";
 import { Modal } from "@/components/Modal";
 import { SuperadminPanel } from "@/components/SuperadminPanel";
+import { OPEN_SETTINGS_EVENT } from "@/lib/open-settings";
 import {
   canChangeOwnPin,
   canManageMaster,
@@ -57,6 +58,13 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   const canUsers = canManageUsers(user.role);
   const canOverdue = canSetOverdue(user.role);
   const showSettings = canUsers || canOverdue;
+
+  useEffect(() => {
+    if (!showSettings) return;
+    const onOpen = () => setSettingsOpen(true);
+    window.addEventListener(OPEN_SETTINGS_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, onOpen);
+  }, [showSettings]);
 
   const nav: { href: string; label: string; key: NavKey }[] = [
     { href: "/dashboard", label: "Dashboard", key: "dashboard" },

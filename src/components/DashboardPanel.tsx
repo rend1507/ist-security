@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { IconPencil } from "@/components/Icons";
+import { KeyTransactionPanel } from "@/components/KeyTransactionPanel";
 import { LiveDuration } from "@/components/LiveDuration";
 import { OfflineSyncBadge } from "@/components/OfflineSyncBadge";
 import { SessionAccessSummary } from "@/components/SessionAccessSummary";
+import { openSettingsModal } from "@/lib/open-settings";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import { toolbarGroup } from "@/lib/ui";
 
@@ -143,12 +146,23 @@ const POLL_MS = 60_000;
 export function DashboardPanel({
   initial,
   isSuperadmin = false,
+  canEditOverdue = false,
+  canTransact = false,
 }: {
   initial: Stats | null;
   isSuperadmin?: boolean;
+  /** Admin / Super Admin — edit batas dari badge pensil */
+  canEditOverdue?: boolean;
+  /** Buka popup kembalikan dari daftar Belum dikembalikan */
+  canTransact?: boolean;
 }) {
   const [stats, setStats] = useState<Stats | null>(initial);
   const [error, setError] = useState<string | null>(null);
+  const [openGiveCode, setOpenGiveCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStats(initial);
+  }, [initial]);
 
   const load = useCallback(async () => {
     if (typeof document !== "undefined" && document.hidden) return;
@@ -195,9 +209,20 @@ export function DashboardPanel({
           </span>
         )}
         {stats && (
-          <span className="rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-base font-semibold text-slate-800">
+          <span className="inline-flex items-center gap-1.5 rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-base font-semibold text-slate-800">
             Batas terlambat:{" "}
             <span className="font-mono">{stats.defaultOverdueMinutes}</span> mnt
+            {canEditOverdue ? (
+              <button
+                type="button"
+                onClick={() => openSettingsModal()}
+                aria-label="Ubah batas terlambat"
+                title="Ubah batas terlambat"
+                className="ml-1 inline-flex h-10 w-10 items-center justify-center rounded-md border-2 border-slate-400 bg-slate-50 text-slate-800 hover:bg-slate-100"
+              >
+                <IconPencil className="h-5 w-5" />
+              </button>
+            ) : null}
           </span>
         )}
         <OfflineSyncBadge />
@@ -336,6 +361,9 @@ export function DashboardPanel({
           </h2>
           <p className="mt-1 text-base text-slate-600">
             Durasi update tiap detik
+            {canTransact
+              ? " · ketuk kunci untuk catat kembali"
+              : null}
           </p>
           {!stats?.notBack.length ? (
             <p className="mt-3 text-base text-slate-500">
@@ -343,37 +371,63 @@ export function DashboardPanel({
             </p>
           ) : (
             <ul className="mt-3 space-y-2 text-base">
-              {stats.notBack.map((r) => (
-                <li
-                  key={r.code}
-                  className={`flex items-center justify-between gap-3 rounded-md px-2.5 py-2.5 ${
-                    r.status === "overdue" ? "bg-rose-100" : "bg-amber-100"
-                  }`}
-                >
-                  <span className="min-w-0">
-                    <span className="font-mono text-lg font-bold">{r.code}</span>
-                    <span className="mt-0.5 block text-base text-slate-700">
-                      {r.jenis}
+              {stats.notBack.map((r) => {
+                const rowClass =
+                  r.status === "overdue" ? "bg-rose-100" : "bg-amber-100";
+                const durClass =
+                  r.status === "overdue"
+                    ? "shrink-0 font-mono text-lg font-bold tabular-nums text-rose-900"
+                    : "shrink-0 font-mono text-lg font-bold tabular-nums text-amber-950";
+                const body = (
+                  <>
+                    <span className="min-w-0 text-left">
+                      <span className="font-mono text-lg font-bold">
+                        {r.code}
+                      </span>
+                      <span className="mt-0.5 block text-base text-slate-700">
+                        {r.jenis}
+                      </span>
+                      <span className="mt-0.5 block text-base font-semibold text-slate-800">
+                        {r.peminjam}
+                      </span>
                     </span>
-                    <span className="mt-0.5 block text-base font-semibold text-slate-800">
-                      {r.peminjam}
+                    <span className={durClass}>
+                      <LiveDuration takeOut={r.take_out} giveBack={null} />
                     </span>
-                  </span>
-                  <span
-                    className={
-                      r.status === "overdue"
-                        ? "shrink-0 font-mono text-lg font-bold tabular-nums text-rose-900"
-                        : "shrink-0 font-mono text-lg font-bold tabular-nums text-amber-950"
-                    }
-                  >
-                    <LiveDuration takeOut={r.take_out} giveBack={null} />
-                  </span>
-                </li>
-              ))}
+                  </>
+                );
+                return (
+                  <li key={r.code}>
+                    {canTransact ? (
+                      <button
+                        type="button"
+                        onClick={() => setOpenGiveCode(r.code)}
+                        className={`flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border-2 border-transparent px-2.5 py-2.5 text-left hover:border-slate-400 ${rowClass}`}
+                      >
+                        {body}
+                      </button>
+                    ) : (
+                      <div
+                        className={`flex items-center justify-between gap-3 rounded-md px-2.5 py-2.5 ${rowClass}`}
+                      >
+                        {body}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
       </div>
+
+      {canTransact ? (
+        <KeyTransactionPanel
+          showToolbar={false}
+          openGiveCode={openGiveCode}
+          onOpenGiveHandled={() => setOpenGiveCode(null)}
+        />
+      ) : null}
     </div>
   );
 }

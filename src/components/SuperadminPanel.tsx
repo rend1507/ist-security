@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { OverdueSettingsForm } from "@/components/OverdueSettingsForm";
 import {
   ASSIGNABLE_ROLES,
   ROLE_LABELS,
@@ -12,7 +13,6 @@ import {
   alertOk,
   btnDanger,
   btnNeutral,
-  btnPrimary,
   btnRow,
   pillActive,
   pillIdle,
@@ -36,7 +36,6 @@ export function SuperadminPanel({
   showUsersTab?: boolean;
 }) {
   const [tab, setTab] = useState<"overdue" | "users">("overdue");
-  const [minutes, setMinutes] = useState("5");
   const [users, setUsers] = useState<UserRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -50,64 +49,29 @@ export function SuperadminPanel({
 
   const activeTab = showUsersTab ? tab : "overdue";
 
-  const load = useCallback(async () => {
+  const loadUsers = useCallback(async () => {
+    if (!showUsersTab || activeTab !== "users") return;
     setError(null);
     try {
-      const s = await fetch("/api/settings");
-      const sj = (await s.json()) as {
+      const res = await fetch("/api/users");
+      const json = (await res.json()) as {
         ok: boolean;
-        data?: { default_overdue_minutes: number };
+        data?: UserRow[];
+        error?: string;
       };
-      if (sj.ok && sj.data) {
-        setMinutes(String(sj.data.default_overdue_minutes));
+      if (!json.ok) {
+        uiApiAlert(setError, UI_MSG.load, res, json);
+        return;
       }
-      if (showUsersTab && activeTab === "users") {
-        const res = await fetch("/api/users");
-        const json = (await res.json()) as {
-          ok: boolean;
-          data?: UserRow[];
-          error?: string;
-        };
-        if (!json.ok) {
-          uiApiAlert(setError, UI_MSG.load, res, json);
-          return;
-        }
-        setUsers(json.data ?? []);
-      }
+      setUsers(json.data ?? []);
     } catch (e) {
       uiAlert(setError, UI_MSG.load, e);
     }
   }, [activeTab, showUsersTab]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function saveOverdue() {
-    setLoading(true);
-    setError(null);
-    setMsg(null);
-    try {
-      const res = await fetch("/api/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          default_overdue_minutes: Number(minutes),
-        }),
-      });
-      const json = (await res.json()) as { ok: boolean; error?: string };
-      if (!json.ok) {
-        uiApiAlert(setError, UI_MSG.save, res, json);
-        return;
-      }
-      setMsg("Batas terlambat disimpan. Memuat ulang…");
-      window.setTimeout(() => {
-        window.location.reload();
-      }, 400);
-    } finally {
-      setLoading(false);
-    }
-  }
+    void loadUsers();
+  }, [loadUsers]);
 
   async function addUser() {
     setLoading(true);
@@ -135,7 +99,7 @@ export function SuperadminPanel({
       setUName("");
       setUPass("");
       setUPin("123456");
-      await load();
+      await loadUsers();
     } finally {
       setLoading(false);
     }
@@ -157,7 +121,7 @@ export function SuperadminPanel({
         return;
       }
       setMsg("Akun dinonaktifkan.");
-      await load();
+      await loadUsers();
     } finally {
       setLoading(false);
     }
@@ -184,35 +148,18 @@ export function SuperadminPanel({
         </div>
       )}
 
-      {error && <p className={alertError}>{error}</p>}
-      {msg && <p className={alertOk}>{msg}</p>}
-
       {activeTab === "overdue" ? (
-        <div className="space-y-3">
-          <p className="text-base text-slate-700">
-            Menit default sebelum status jadi terlambat.
-          </p>
-          <label className="block text-base font-semibold">
-            Menit
-            <input
-              type="number"
-              min={1}
-              value={minutes}
-              onChange={(e) => setMinutes(e.target.value)}
-              className="mt-1 w-full rounded-md border-2 border-slate-400 px-3 py-2.5 font-mono text-base"
-            />
-          </label>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={saveOverdue}
-            className={btnPrimary}
-          >
-            Simpan
-          </button>
-        </div>
+        <OverdueSettingsForm
+          onSaved={() => {
+            window.setTimeout(() => {
+              window.location.reload();
+            }, 400);
+          }}
+        />
       ) : (
         <div className="space-y-4">
+          {error && <p className={alertError}>{error}</p>}
+          {msg && <p className={alertOk}>{msg}</p>}
           <ul className="list-inside list-disc space-y-1 text-base text-amber-950">
             <li>Tidak bisa menambah Super Admin lewat aplikasi</li>
             <li>Tidak bisa menonaktifkan akun Super Admin (termasuk sendiri)</li>
