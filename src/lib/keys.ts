@@ -1,3 +1,4 @@
+import { currentMonthWibRange } from "@/lib/dates";
 import { getDb } from "@/lib/db";
 import {
   DEFAULT_OVERDUE_MINUTES,
@@ -124,33 +125,67 @@ export async function getDashboardStats() {
   /** Alias lama `returned` = di rak (untuk kartu dashboard) */
   const returned = onRack;
 
-  const borrowerCount = new Map<string, number>();
-  for (const r of rows) {
-    if (r.peminjam && r.peminjam !== "—") {
-      borrowerCount.set(r.peminjam, (borrowerCount.get(r.peminjam) ?? 0) + 1);
-    }
-  }
-  const topBorrowers = [...borrowerCount.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, count]) => ({ name, count }));
+  const month = currentMonthWibRange();
+  const fromSql = `${month.fromYmd} 00:00:00`;
+  const toSql = `${month.toYmd} 23:59:59`;
+  const db = await getDb();
+  const now = Date.now();
 
-  /** Top 3 longest — semua transaksi yang punya durasi (sesuai Excel SUMMARY) */
-  const topLongest = [...rows]
-    .filter((r) => r.durasi_ms > 0)
-    .sort((a, b) => b.durasi_ms - a.durasi_ms)
-    .slice(0, 3)
+  /** Ranking bulan berjalan (WIB) — tidak kecampur bulan lalu */
+  const { results: monthBorrowers } = await db
+    .prepare(
+      `SELECT borrower_name AS name, COUNT(*) AS count
+       FROM borrow_logs
+       WHERE take_out_at >= ? AND take_out_at <= ?
+         AND borrower_name IS NOT NULL AND trim(borrower_name) != ''
+       GROUP BY borrower_name
+       ORDER BY count DESC, borrower_name ASC
+       LIMIT 3`
+    )
+    .bind(fromSql, toSql)
+    .all<{ name: string; count: number }>();
+
+  const topBorrowers = (monthBorrowers ?? []).map((b) => ({
+    name: b.name,
+    count: Number(b.count),
+  }));
+
+  const { results: monthLogs } = await db
+    .prepare(
+      `SELECT
+         k.code,
+         k.jenis,
+         bl.borrower_name AS peminjam,
+         bl.take_out_at AS take_out,
+         bl.give_back_at AS give_back
+       FROM borrow_logs bl
+       INNER JOIN keys k ON k.id = bl.key_id
+       WHERE bl.take_out_at >= ? AND bl.take_out_at <= ?`
+    )
+    .bind(fromSql, toSql)
+    .all<{
+      code: string;
+      jenis: string;
+      peminjam: string;
+      take_out: string;
+      give_back: string | null;
+    }>();
+
+  const topLongest = (monthLogs ?? [])
     .map((r) => ({
       code: r.code,
       jenis: r.jenis,
-      peminjam: r.peminjam,
+      peminjam: r.peminjam || "—",
       take_out: r.take_out,
       give_back: r.give_back,
-      durasi_ms: r.durasi_ms,
-      status: r.status,
-    }));
+      durasi_ms: durationMs(r.take_out, r.give_back, now),
+      status: r.give_back ? "returned" : "out",
+    }))
+    .filter((r) => r.durasi_ms > 0)
+    .sort((a, b) => b.durasi_ms - a.durasi_ms)
+    .slice(0, 3);
 
-  /** Top take-out belum kembali (Excel: TOP 3 TAKE OUT NOT BACK) */
+  /** Belum kembali — realtime (status kunci sekarang) */
   const notBack = stillOutRows
     .sort((a, b) => b.durasi_ms - a.durasi_ms)
     .slice(0, 8)
@@ -180,6 +215,9 @@ export async function getDashboardStats() {
     topBorrowers,
     topLongest,
     notBack,
+    monthLabel: month.label,
+    monthFrom: month.fromYmd,
+    monthTo: month.toYmd,
     defaultOverdueMinutes,
     updatedAt: new Date().toISOString(),
   };

@@ -107,4 +107,18 @@ textarea {
   .qr-print-grid {
     gap: 1.8mm;
   }
+
+  .log-kunci-print-sheet {
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  .log-kunci-print-sheet table {
+    font-size: 10pt;
+  }
+
+  .log-kunci-print-sheet th,
+  .log-kunci-print-sheet td {
+    padding: 4px 6px !important;
+  }
 }

@@ -88,17 +88,21 @@ export function durationMs(takeOut: string, giveBack: string | null, now = Date.
   return Math.max(0, end - start);
 }
 
-/** Format lama pinjam: `DD HH:MM:SS` — sembunyikan DD jika belum 1 hari. */
+/**
+ * Format lama pinjam.
+ * ≥1 hari: `1 hari 2j 3m` (tanpa detik).
+ * Di bawah 1 hari: `2j 3m 10d` (d = detik).
+ */
 export function formatDuration(ms: number): string {
   const totalSec = Math.max(0, Math.floor(ms / 1000));
   const days = Math.floor(totalSec / 86400);
   const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const hms = `${pad(h)}:${pad(m)}:${pad(s)}`;
-  if (days > 0) return `${String(days).padStart(2, "0")} ${hms}`;
-  return hms;
+  if (days > 0) {
+    return `${days} hari ${h}j ${m}m`;
+  }
+  return `${h}j ${m}m ${s}d`;
 }
 
 /**

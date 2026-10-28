@@ -38,6 +38,10 @@ type Stats = {
     durasi_ms: number;
     status: string;
   }[];
+  /** Ranking top* hanya bulan kalender WIB ini */
+  monthLabel?: string;
+  monthFrom?: string;
+  monthTo?: string;
   defaultOverdueMinutes: number;
   updatedAt: string;
 };
@@ -258,8 +262,13 @@ export function DashboardPanel({
           <h2 className="text-base font-bold text-slate-900">
             3 peminjam terbanyak
           </h2>
+          <p className="mt-1 text-base text-slate-600">
+            Bulan {stats?.monthLabel ?? "berjalan"} (WIB)
+          </p>
           {!stats?.topBorrowers.length ? (
-            <p className="mt-3 text-base text-slate-500">Belum ada data.</p>
+            <p className="mt-3 text-base text-slate-500">
+              Belum ada pinjam di bulan ini.
+            </p>
           ) : (
             <ul className="mt-3 space-y-2 text-base">
               {stats.topBorrowers.map((b, i) => (
@@ -286,8 +295,13 @@ export function DashboardPanel({
           <h2 className="text-base font-bold text-slate-900">
             3 pinjaman paling lama
           </h2>
+          <p className="mt-1 text-base text-slate-600">
+            Bulan {stats?.monthLabel ?? "berjalan"} (WIB)
+          </p>
           {!stats?.topLongest.length ? (
-            <p className="mt-3 text-base text-slate-500">Belum ada data.</p>
+            <p className="mt-3 text-base text-slate-500">
+              Belum ada pinjam di bulan ini.
+            </p>
           ) : (
             <ul className="mt-3 space-y-2 text-base">
               {stats.topLongest.map((r) => (

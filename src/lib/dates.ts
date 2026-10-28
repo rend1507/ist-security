@@ -37,3 +37,22 @@ export function wibDateDaysAgo(days: number, d = new Date()): string {
   const dd = String(then.getUTCDate()).padStart(2, "0");
   return `${yy}-${mm}-${dd}`;
 }
+
+/** Awal–akhir bulan kalender WIB (untuk ranking dashboard). */
+export function currentMonthWibRange(d = new Date()): {
+  fromYmd: string;
+  toYmd: string;
+  label: string;
+} {
+  const today = todayWibDate(d);
+  const [y, m] = today.split("-").map(Number);
+  const fromYmd = `${y}-${String(m).padStart(2, "0")}-01`;
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const toYmd = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const label = new Intl.DateTimeFormat("id-ID", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(y, m - 1, 1)));
+  return { fromYmd, toYmd, label };
+}
