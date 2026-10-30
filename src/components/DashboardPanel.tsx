@@ -359,12 +359,11 @@ export function DashboardPanel({
           <h2 className="text-base font-bold text-slate-900">
             Belum dikembalikan
           </h2>
-          <p className="mt-1 text-base text-slate-600">
-            Durasi update tiap detik
-            {canTransact
-              ? " · ketuk kunci untuk catat kembali"
-              : null}
-          </p>
+          {canTransact ? (
+            <p className="mt-1 text-base text-slate-600">
+              Ketuk kunci untuk catat kembali
+            </p>
+          ) : null}
           {!stats?.notBack.length ? (
             <p className="mt-3 text-base text-slate-500">
               Semua kunci sudah kembali.

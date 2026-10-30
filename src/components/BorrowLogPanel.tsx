@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconPrint } from "@/components/Icons";
+import { LiveDuration } from "@/components/LiveDuration";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
+import { durationMs } from "@/lib/domain";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
   alertError,
@@ -21,6 +23,7 @@ type SortKey =
   | "borrower_name"
   | "take_out_at"
   | "give_back_at"
+  | "durasi"
   | "taken_by"
   | "returned_by";
 
@@ -30,6 +33,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "borrower_name", label: "Peminjam" },
   { key: "take_out_at", label: "Dipinjam" },
   { key: "give_back_at", label: "Dikembalikan" },
+  { key: "durasi", label: "Durasi" },
   { key: "taken_by", label: "Petugas pinjam" },
   { key: "returned_by", label: "Petugas kembali" },
 ];
@@ -84,7 +88,11 @@ export function BorrowLogPanel() {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
-      setSortDir(key === "take_out_at" || key === "give_back_at" ? "desc" : "asc");
+      setSortDir(
+        key === "take_out_at" || key === "give_back_at" || key === "durasi"
+          ? "desc"
+          : "asc"
+      );
     }
   }
 
@@ -92,6 +100,13 @@ export function BorrowLogPanel() {
     const copy = [...rows];
     const dir = sortDir === "asc" ? 1 : -1;
     copy.sort((a, b) => {
+      if (sortKey === "durasi") {
+        return (
+          (durationMs(a.take_out_at, a.give_back_at) -
+            durationMs(b.take_out_at, b.give_back_at)) *
+          dir
+        );
+      }
       const av =
         sortKey === "borrower_name"
           ? a.borrower_name
@@ -197,7 +212,7 @@ export function BorrowLogPanel() {
               {sorted.length === 0 && !loading ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-3 py-8 text-center text-base text-slate-500"
                   >
                     Tidak ada log di rentang tanggal ini.
@@ -223,6 +238,12 @@ export function BorrowLogPanel() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base">
                       {r.give_back_at ?? "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base font-semibold">
+                      <LiveDuration
+                        takeOut={r.take_out_at}
+                        giveBack={r.give_back_at}
+                      />
                     </td>
                     <td className="px-3 py-2.5 text-base">
                       {r.taken_by ?? "—"}
