@@ -27,16 +27,24 @@ type SortKey =
   | "taken_by"
   | "returned_by";
 
-const COLUMNS: { key: SortKey; label: string }[] = [
-  { key: "key_code", label: "Kunci" },
-  { key: "key_jenis", label: "Jenis" },
-  { key: "borrower_name", label: "Peminjam" },
-  { key: "take_out_at", label: "Dipinjam" },
-  { key: "give_back_at", label: "Dikembalikan" },
-  { key: "durasi", label: "Durasi" },
-  { key: "taken_by", label: "Petugas pinjam" },
-  { key: "returned_by", label: "Petugas kembali" },
+const COLUMNS: { key: SortKey; label: string; printLabel: string; colClass: string }[] = [
+  { key: "key_code", label: "Kunci", printLabel: "Kunci", colClass: "log-kunci-col-key" },
+  { key: "key_jenis", label: "Jenis", printLabel: "Jenis", colClass: "log-kunci-col-jenis" },
+  { key: "borrower_name", label: "Peminjam", printLabel: "Peminjam", colClass: "log-kunci-col-peminjam" },
+  { key: "take_out_at", label: "Dipinjam", printLabel: "Pinjam", colClass: "log-kunci-col-take" },
+  { key: "give_back_at", label: "Dikembalikan", printLabel: "Kembali", colClass: "log-kunci-col-give" },
+  { key: "durasi", label: "Durasi", printLabel: "Durasi", colClass: "log-kunci-col-durasi" },
+  { key: "taken_by", label: "Petugas pinjam", printLabel: "Ptg pinjam", colClass: "log-kunci-col-taken" },
+  { key: "returned_by", label: "Petugas kembali", printLabel: "Ptg kembali", colClass: "log-kunci-col-returned" },
 ];
+
+/** Jam layar penuh; cetak: `19/10 20:20` agar muat A4 portrait. */
+function fmtLogWhen(raw: string | null): { screen: string; print: string } {
+  if (!raw) return { screen: "—", print: "—" };
+  const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!m) return { screen: raw, print: raw };
+  return { screen: raw, print: `${m[3]}/${m[2]} ${m[4]}:${m[5]}` };
+}
 
 function cmp(a: string | null, b: string | null) {
   return String(a ?? "").localeCompare(String(b ?? ""), "id", {
@@ -129,7 +137,7 @@ export function BorrowLogPanel() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print:space-y-0">
       <div className={`${toolbarGroup} items-end print:hidden`}>
         <label className={textLabel}>
           Dari tanggal
@@ -174,28 +182,29 @@ export function BorrowLogPanel() {
         id="log-kunci-print-root"
         className="log-kunci-print-sheet rounded-lg border-2 border-slate-300 bg-white print:border-0"
       >
-        <div className="hidden border-b border-slate-300 px-3 py-3 print:block">
+        <div className="log-kunci-print-header hidden border-b border-slate-300 px-3 py-3 print:block">
           <p className="text-base font-bold text-slate-900">
             IST Security — Log kunci
           </p>
-          <p className="mt-1 font-mono text-base text-slate-700">
+          <p className="log-kunci-print-meta mt-1 font-mono text-base text-slate-700">
             {from} s/d {to} · {sorted.length} baris
           </p>
         </div>
-        <div className={`${tableShell} print:border-0`}>
+        <div className={`${tableShell} print:overflow-visible print:border-0`}>
           <table className="min-w-full text-left text-base">
             <thead className={tableHead}>
               <tr>
                 {COLUMNS.map((col) => {
                   const active = sortKey === col.key;
                   return (
-                    <th key={col.key} className="px-3 py-2.5">
+                    <th key={col.key} className={`px-3 py-2.5 ${col.colClass}`}>
                       <button
                         type="button"
                         onClick={() => toggleSort(col.key)}
                         className="inline-flex min-h-10 cursor-pointer items-center gap-1 hover:text-slate-950 print:cursor-default"
                       >
-                        {col.label}
+                        <span className="print:hidden">{col.label}</span>
+                        <span className="hidden print:inline">{col.printLabel}</span>
                         <span
                           className="text-xs opacity-80 print:hidden"
                           aria-hidden
@@ -219,40 +228,52 @@ export function BorrowLogPanel() {
                   </td>
                 </tr>
               ) : (
-                sorted.map((r) => (
+                sorted.map((r) => {
+                  const take = fmtLogWhen(r.take_out_at);
+                  const give = fmtLogWhen(r.give_back_at);
+                  return (
                   <tr key={r.id} className="border-t border-slate-200">
-                    <td className="px-3 py-2.5 font-mono text-base font-bold">
+                    <td className="log-kunci-col-key px-3 py-2.5 font-mono text-base font-bold">
                       {r.key_code}
                     </td>
-                    <td className="px-3 py-2.5 text-base">{r.key_jenis}</td>
-                    <td className="px-3 py-2.5 text-base">
+                    <td className="log-kunci-col-jenis px-3 py-2.5 text-base">{r.key_jenis}</td>
+                    <td className="log-kunci-col-peminjam px-3 py-2.5 text-base">
                       <span className="font-semibold">{r.borrower_name}</span>
                       {r.borrower_divisi ? (
-                        <span className="mt-0.5 block text-base text-slate-700">
-                          {r.borrower_divisi}
-                        </span>
+                        <>
+                          <span className="mt-0.5 block text-base text-slate-700 print:hidden">
+                            {r.borrower_divisi}
+                          </span>
+                          <span className="hidden print:inline text-slate-600">
+                            {" "}
+                            · {r.borrower_divisi}
+                          </span>
+                        </>
                       ) : null}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base">
-                      {r.take_out_at}
+                    <td className="log-kunci-col-take whitespace-nowrap px-3 py-2.5 font-mono text-base">
+                      <span className="print:hidden">{take.screen}</span>
+                      <span className="hidden print:inline">{take.print}</span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base">
-                      {r.give_back_at ?? "—"}
+                    <td className="log-kunci-col-give whitespace-nowrap px-3 py-2.5 font-mono text-base">
+                      <span className="print:hidden">{give.screen}</span>
+                      <span className="hidden print:inline">{give.print}</span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 font-mono text-base font-semibold">
+                    <td className="log-kunci-col-durasi whitespace-nowrap px-3 py-2.5 font-mono text-base font-semibold">
                       <LiveDuration
                         takeOut={r.take_out_at}
                         giveBack={r.give_back_at}
                       />
                     </td>
-                    <td className="px-3 py-2.5 text-base">
+                    <td className="log-kunci-col-taken px-3 py-2.5 text-base">
                       {r.taken_by ?? "—"}
                     </td>
-                    <td className="px-3 py-2.5 text-base">
+                    <td className="log-kunci-col-returned px-3 py-2.5 text-base">
                       {r.returned_by ?? "—"}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

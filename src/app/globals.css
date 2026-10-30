@@ -90,12 +90,22 @@ textarea {
 
 @media print {
   @page {
-    size: A4;
+    size: A4 portrait;
     margin: 6mm;
   }
 
+  html,
   body {
     background: #fff !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Jangan paksa 100vh — itu bikin halaman 2 saat cetak */
+  .min-h-screen {
+    min-height: 0 !important;
+    height: auto !important;
   }
 
   .qr-print-sheet {
@@ -111,14 +121,88 @@ textarea {
   .log-kunci-print-sheet {
     border: none !important;
     border-radius: 0 !important;
+    overflow: visible !important;
+  }
+
+  .log-kunci-print-header {
+    margin: 0 0 2mm !important;
+    padding: 0 0 1.5mm !important;
+    border-bottom: 0.3pt solid #94a3b8 !important;
+  }
+
+  .log-kunci-print-header p {
+    font-size: 9pt !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+  }
+
+  .log-kunci-print-header .log-kunci-print-meta {
+    font-size: 8pt !important;
+    margin-top: 0.5mm !important;
   }
 
   .log-kunci-print-sheet table {
-    font-size: 10pt;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 8pt !important;
+    line-height: 1.15 !important;
   }
 
   .log-kunci-print-sheet th,
   .log-kunci-print-sheet td {
-    padding: 4px 6px !important;
+    font-size: 8pt !important;
+    line-height: 1.15 !important;
+    padding: 1.5px 3px !important;
+    vertical-align: middle !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #0f172a !important;
+    border-bottom: 0.25pt solid #cbd5e1 !important;
+  }
+
+  .log-kunci-print-sheet th {
+    font-size: 7pt !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .log-kunci-print-sheet th button {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    font-weight: 700 !important;
+    gap: 0 !important;
+  }
+
+  .log-kunci-col-key {
+    width: 8%;
+  }
+  .log-kunci-col-jenis {
+    width: 13%;
+  }
+  .log-kunci-col-peminjam {
+    width: 15%;
+  }
+  .log-kunci-col-take {
+    width: 11%;
+  }
+  .log-kunci-col-give {
+    width: 11%;
+  }
+  .log-kunci-col-durasi {
+    width: 13%;
+  }
+  .log-kunci-col-taken {
+    width: 14%;
+  }
+  .log-kunci-col-returned {
+    width: 15%;
   }
 }
