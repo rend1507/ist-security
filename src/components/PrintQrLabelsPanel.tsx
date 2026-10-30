@@ -7,6 +7,8 @@ import {
   type QrLabelKey,
   type QrLabelReady,
 } from "@/lib/print-qr-labels";
+import { todayWibDate } from "@/lib/dates";
+import { daftarKunciPdfTitle, printWithTitle } from "@/lib/print-title";
 import { uiAlert } from "@/lib/public-error";
 import {
   alertError,
@@ -98,7 +100,7 @@ export function PrintQrLabelsPanel({
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={() => printWithTitle(daftarKunciPdfTitle(todayWibDate()))}
             className={btnPrimary}
           >
             <IconPrint />

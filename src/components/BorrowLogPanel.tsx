@@ -5,6 +5,7 @@ import { IconPrint } from "@/components/Icons";
 import { LiveDuration } from "@/components/LiveDuration";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
+import { logKunciPdfTitle, printWithTitle } from "@/lib/print-title";
 import { durationMs } from "@/lib/domain";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
@@ -133,7 +134,7 @@ export function BorrowLogPanel() {
       setError("Tidak ada data untuk dicetak. Pilih tanggal lalu Tampilkan dulu.");
       return;
     }
-    window.print();
+    printWithTitle(logKunciPdfTitle(from, to));
   }
 
   return (
