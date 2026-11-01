@@ -131,7 +131,7 @@ export function BorrowLogPanel() {
 
   function printPdf() {
     if (sorted.length === 0) {
-      setError("Tidak ada data untuk dicetak. Pilih tanggal lalu Tampilkan dulu.");
+      setError("Tidak ada data untuk dicetak. Ubah tanggal dulu.");
       return;
     }
     printWithTitle(logKunciPdfTitle(from, to));
@@ -145,7 +145,11 @@ export function BorrowLogPanel() {
           <input
             type="date"
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setFrom(v);
+              if (v) void load(v, to);
+            }}
             className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2.5 font-mono text-base"
           />
         </label>
@@ -154,7 +158,11 @@ export function BorrowLogPanel() {
           <input
             type="date"
             value={to}
-            onChange={(e) => setTo(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setTo(v);
+              if (v) void load(from, v);
+            }}
             className="mt-1 block w-full min-w-[10rem] rounded-md border-2 border-slate-400 bg-white px-3 py-2.5 font-mono text-base"
           />
         </label>
@@ -183,17 +191,19 @@ export function BorrowLogPanel() {
         id="log-kunci-print-root"
         className="log-kunci-print-sheet rounded-lg border-2 border-slate-300 bg-white print:border-0"
       >
-        <div className="log-kunci-print-header hidden border-b border-slate-300 px-3 py-3 print:block">
-          <p className="text-base font-bold text-slate-900">
-            IST Security — Log kunci
-          </p>
-          <p className="log-kunci-print-meta mt-1 font-mono text-base text-slate-700">
-            {from} s/d {to} · {sorted.length} baris
-          </p>
-        </div>
         <div className={`${tableShell} print:overflow-visible print:border-0`}>
           <table className="min-w-full text-left text-base">
             <thead className={tableHead}>
+              <tr className="log-kunci-print-title hidden print:table-row">
+                <th colSpan={8} className="log-kunci-print-title-cell">
+                  <span className="log-kunci-print-title-name">
+                    IST Security — Log kunci
+                  </span>
+                  <span className="log-kunci-print-meta">
+                    {from} s/d {to} · {sorted.length} baris
+                  </span>
+                </th>
+              </tr>
               <tr>
                 {COLUMNS.map((col) => {
                   const active = sortKey === col.key;

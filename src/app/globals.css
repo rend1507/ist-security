@@ -124,21 +124,35 @@ textarea {
     overflow: visible !important;
   }
 
-  .log-kunci-print-header {
-    margin: 0 0 2mm !important;
-    padding: 0 0 1.5mm !important;
+  .log-kunci-print-sheet thead {
+    display: table-header-group;
+  }
+
+  .log-kunci-print-sheet tbody {
+    display: table-row-group;
+  }
+
+  .log-kunci-print-title-cell {
+    text-transform: none !important;
+    text-align: left !important;
+    white-space: normal !important;
+    background: #fff !important;
     border-bottom: 0.3pt solid #94a3b8 !important;
+    padding: 0 0 2mm !important;
   }
 
-  .log-kunci-print-header p {
+  .log-kunci-print-title-name {
+    display: block;
     font-size: 9pt !important;
+    font-weight: 700 !important;
     line-height: 1.2 !important;
-    margin: 0 !important;
   }
 
-  .log-kunci-print-header .log-kunci-print-meta {
+  .log-kunci-print-title-cell .log-kunci-print-meta {
+    display: block;
     font-size: 8pt !important;
-    margin-top: 0.5mm !important;
+    font-weight: 400 !important;
+    margin-top: 0.4mm;
   }
 
   .log-kunci-print-sheet table {
