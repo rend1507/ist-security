@@ -7,6 +7,7 @@ initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  serverExternalPackages: ["@react-pdf/renderer"],
   outputFileTracingRoot: path.join(__dirname),
   images: { unoptimized: true },
   // Jangan kirim source map ke browser (memudahkan RE / AI baca sumber).

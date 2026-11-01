@@ -3,9 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconPrint } from "@/components/Icons";
 import { LiveDuration } from "@/components/LiveDuration";
+import {
+  PAGE_SIZE_OPTIONS,
+  PaginationBar,
+  type PageSizeOption,
+} from "@/components/PaginationBar";
 import type { BorrowLogListRow } from "@/lib/borrow-logs";
 import { todayWibDate } from "@/lib/dates";
-import { logKunciPdfTitle, printWithTitle } from "@/lib/print-title";
+import { downloadPdfBlob, logKunciPdfTitle } from "@/lib/print-title";
 import { durationMs } from "@/lib/domain";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import {
@@ -61,6 +66,9 @@ export function BorrowLogPanel() {
   const [loading, setLoading] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("take_out_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [makingPdf, setMakingPdf] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<PageSizeOption>(20);
 
   const load = useCallback(async (fromYmd: string, toYmd: string) => {
     setLoading(true);
@@ -76,9 +84,11 @@ export function BorrowLogPanel() {
       if (!json.ok || !json.data) {
         uiApiAlert(setError, UI_MSG.load, res, json);
         setRows([]);
+        setPage(1);
         return;
       }
       setRows(json.data.rows);
+      setPage(1);
     } catch (err) {
       uiAlert(setError, UI_MSG.network, err);
       setRows([]);
@@ -103,6 +113,7 @@ export function BorrowLogPanel() {
           : "asc"
       );
     }
+    setPage(1);
   }
 
   const sorted = useMemo(() => {
@@ -129,12 +140,40 @@ export function BorrowLogPanel() {
     return copy;
   }, [rows, sortKey, sortDir]);
 
-  function printPdf() {
+  const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const paged = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return sorted.slice(start, start + pageSize);
+  }, [sorted, safePage, pageSize]);
+  const noStart = (safePage - 1) * pageSize;
+
+  async function printPdf() {
     if (sorted.length === 0) {
       setError("Tidak ada data untuk dicetak. Ubah tanggal dulu.");
       return;
     }
-    printWithTitle(logKunciPdfTitle(from, to));
+    setMakingPdf(true);
+    setError(null);
+    try {
+      const [{ pdf }, { LogKunciPdfDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/lib/log-kunci-pdf"),
+      ]);
+      const blob = await pdf(
+        <LogKunciPdfDocument
+          from={from}
+          to={to}
+          rows={sorted}
+          nowMs={Date.now()}
+        />
+      ).toBlob();
+      downloadPdfBlob(blob, logKunciPdfTitle(from, to));
+    } catch (err) {
+      uiAlert(setError, "Gagal membuat PDF.", err);
+    } finally {
+      setMakingPdf(false);
+    }
   }
 
   return (
@@ -176,12 +215,12 @@ export function BorrowLogPanel() {
         </button>
         <button
           type="button"
-          disabled={loading || sorted.length === 0}
-          onClick={printPdf}
+          disabled={loading || makingPdf || sorted.length === 0}
+          onClick={() => void printPdf()}
           className={btnSuccess}
         >
           <IconPrint />
-          Cetak / PDF
+          {makingPdf ? "Menyusun PDF…" : "Cetak / PDF"}
         </button>
       </div>
 
@@ -195,7 +234,7 @@ export function BorrowLogPanel() {
           <table className="min-w-full text-left text-base">
             <thead className={tableHead}>
               <tr className="log-kunci-print-title hidden print:table-row">
-                <th colSpan={8} className="log-kunci-print-title-cell">
+                <th colSpan={9} className="log-kunci-print-title-cell">
                   <span className="log-kunci-print-title-name">
                     IST Security — Log kunci
                   </span>
@@ -205,6 +244,7 @@ export function BorrowLogPanel() {
                 </th>
               </tr>
               <tr>
+                <th className="w-14 px-3 py-2.5">No.</th>
                 {COLUMNS.map((col) => {
                   const active = sortKey === col.key;
                   return (
@@ -232,18 +272,21 @@ export function BorrowLogPanel() {
               {sorted.length === 0 && !loading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-3 py-8 text-center text-base text-slate-500"
                   >
                     Tidak ada log di rentang tanggal ini.
                   </td>
                 </tr>
               ) : (
-                sorted.map((r) => {
+                paged.map((r, i) => {
                   const take = fmtLogWhen(r.take_out_at);
                   const give = fmtLogWhen(r.give_back_at);
                   return (
                   <tr key={r.id} className="border-t border-slate-200">
+                    <td className="w-14 px-3 py-2.5 font-mono text-base tabular-nums text-slate-700">
+                      {noStart + i + 1}
+                    </td>
                     <td className="log-kunci-col-key px-3 py-2.5 font-mono text-base font-bold">
                       {r.key_code}
                     </td>
@@ -290,6 +333,21 @@ export function BorrowLogPanel() {
           </table>
         </div>
       </div>
+
+      {sorted.length > 0 && (
+        <PaginationBar
+          page={safePage}
+          pageSize={pageSize}
+          total={sorted.length}
+          disabled={loading}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            if (!(PAGE_SIZE_OPTIONS as readonly number[]).includes(size)) return;
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
+      )}
     </div>
   );
 }

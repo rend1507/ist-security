@@ -14,6 +14,20 @@ export function daftarKunciPdfTitle(printYmd: string): string {
   return `${printYmd} | Daftar Kunci - IST Security`;
 }
 
+/** Unduh blob PDF. `title` tanpa `.pdf` — sama aturan nama file Cetak/PDF. */
+export function downloadPdfBlob(blob: Blob, title: string): void {
+  const filename = title.endsWith(".pdf") ? title : `${title}.pdf`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 2_000);
+}
+
 export function printWithTitle(title: string): void {
   const prev = document.title;
   document.title = title;
