@@ -145,7 +145,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   }
 
   return (
-    <div className="app-print-root min-h-screen bg-slate-100 font-sans text-base text-slate-900">
+    <div className="min-h-screen bg-slate-100 font-sans text-base text-slate-900">
       <div className="flex min-h-screen">
         <aside className="hidden w-60 shrink-0 flex-col bg-slate-900 text-slate-100 print:hidden md:flex">
           <div className="border-b border-slate-700 px-4 py-5">
