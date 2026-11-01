@@ -145,8 +145,8 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-base text-slate-900">
-      <div className="flex min-h-screen">
+    <div className="app-print-root min-h-screen bg-slate-100 font-sans text-base text-slate-900">
+      <div className="app-print-stack flex min-h-screen">
         <aside className="hidden w-60 shrink-0 flex-col bg-slate-900 text-slate-100 print:hidden md:flex">
           <div className="border-b border-slate-700 px-4 py-5">
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-400">
@@ -163,7 +163,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="app-print-col flex min-w-0 flex-1 flex-col">
           <header className="flex flex-col gap-3 border-b-2 border-slate-300 bg-white px-3 py-3 print:hidden sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4 md:px-6">
             <div className="flex min-w-0 items-start gap-2">
               <button

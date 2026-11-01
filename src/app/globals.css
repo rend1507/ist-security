@@ -108,6 +108,27 @@ textarea {
     height: auto !important;
   }
 
+  /* Navbar / judul halaman / Keluar tetap tersembunyi (jangan override print:hidden). */
+  header,
+  aside {
+    display: none !important;
+  }
+
+  /*
+   * Hanya buka wrapper konten (bukan .flex global) supaya thead
+   * (Kunci, Jenis, Peminjam, Pinjam, …) berulang di halaman 2+.
+   */
+  .app-print-root,
+  .app-print-stack,
+  .app-print-col,
+  .app-print-col > main {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
   .qr-print-sheet {
     border: none !important;
     padding: 0 !important;
@@ -125,7 +146,7 @@ textarea {
   }
 
   .log-kunci-print-sheet thead {
-    display: table-header-group;
+    display: table-header-group !important;
   }
 
   .log-kunci-print-sheet tbody {
