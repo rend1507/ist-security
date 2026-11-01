@@ -191,19 +191,17 @@ export function BorrowLogPanel() {
         id="log-kunci-print-root"
         className="log-kunci-print-sheet rounded-lg border-2 border-slate-300 bg-white print:border-0"
       >
+        <div className="log-kunci-print-header hidden border-b border-slate-300 px-3 py-3 print:block">
+          <p className="text-base font-bold text-slate-900">
+            IST Security — Log kunci
+          </p>
+          <p className="log-kunci-print-meta mt-1 font-mono text-base text-slate-700">
+            {from} s/d {to} · {sorted.length} baris
+          </p>
+        </div>
         <div className={`${tableShell} print:overflow-visible print:border-0`}>
           <table className="min-w-full text-left text-base">
             <thead className={tableHead}>
-              <tr className="log-kunci-print-title hidden print:table-row">
-                <th colSpan={8} className="log-kunci-print-title-cell">
-                  <span className="log-kunci-print-title-name">
-                    IST Security — Log kunci
-                  </span>
-                  <span className="log-kunci-print-meta">
-                    {from} s/d {to} · {sorted.length} baris
-                  </span>
-                </th>
-              </tr>
               <tr>
                 {COLUMNS.map((col) => {
                   const active = sortKey === col.key;
