@@ -9,7 +9,11 @@ import {
 import { todayWibDate, wibDateDaysAgo } from "@/lib/dates";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
 import { ROLE_LABELS, type Role } from "@/lib/roles";
-import type { SessionAccessLogRow } from "@/lib/session-logs";
+import {
+  ACTIVITY_EVENT_LABELS,
+  type SessionAccessEvent,
+  type SessionAccessLogRow,
+} from "@/lib/session-logs";
 import {
   alertError,
   btnPrimary,
@@ -20,15 +24,18 @@ import {
 } from "@/lib/ui";
 
 function eventLabel(event: string) {
-  return event === "login" ? "Masuk" : event === "logout" ? "Keluar" : event;
+  return (
+    ACTIVITY_EVENT_LABELS[event as SessionAccessEvent] ?? event
+  );
 }
 
 function eventBadgeClass(event: string) {
-  return event === "login"
-    ? "bg-emerald-200 text-emerald-950"
-    : event === "logout"
-      ? "bg-slate-200 text-slate-900"
-      : "bg-amber-100 text-amber-950";
+  if (event === "login") return "bg-emerald-200 text-emerald-950";
+  if (event === "logout") return "bg-slate-200 text-slate-900";
+  if (event === "user_deactivate" || event === "key_delete") {
+    return "bg-rose-200 text-rose-950";
+  }
+  return "bg-amber-100 text-amber-950";
 }
 
 export function SessionAccessLogPanel() {
@@ -144,8 +151,8 @@ export function SessionAccessLogPanel() {
       </div>
 
       <p className="text-base text-slate-700">
-        Default rentang 7 hari (bisa diperpanjang lewat tanggal). Hanya Super
-        Admin.
+        Default rentang 7 hari (bisa diperpanjang lewat tanggal). Masuk, keluar,
+        dan aksi kunci/akun. Hanya Super Admin.
       </p>
 
       {error && <p className={alertError}>{error}</p>}
@@ -156,6 +163,7 @@ export function SessionAccessLogPanel() {
             <tr>
               <th className="px-3 py-2.5">Waktu</th>
               <th className="px-3 py-2.5">Aksi</th>
+              <th className="px-3 py-2.5">Detail</th>
               <th className="px-3 py-2.5">ID</th>
               <th className="px-3 py-2.5">Nama</th>
               <th className="px-3 py-2.5">Peran</th>
@@ -166,7 +174,7 @@ export function SessionAccessLogPanel() {
             {rows.length === 0 && !loading ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-3 py-8 text-center text-base text-slate-500"
                 >
                   Belum ada log di rentang ini.
@@ -184,6 +192,9 @@ export function SessionAccessLogPanel() {
                     >
                       {eventLabel(r.event)}
                     </span>
+                  </td>
+                  <td className="max-w-[16rem] px-3 py-2.5 text-base text-slate-800">
+                    {r.detail || "—"}
                   </td>
                   <td className="px-3 py-2.5 font-mono text-base font-semibold">
                     {r.username}

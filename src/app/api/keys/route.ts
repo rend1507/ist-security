@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity-log";
 import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { findKeyByScanOrCode } from "@/lib/key-lookup";
@@ -105,6 +106,8 @@ export async function POST(req: Request) {
       .bind(code, jenis, barcode, overdue)
       .run();
 
+    await logActivity(user, "key_create", `${code} · ${jenis}`, req);
+
     return jsonOk({
       id: Number(res.meta.last_row_id),
       code,
@@ -166,6 +169,7 @@ export async function PATCH(req: Request) {
         )
         .bind(id)
         .run();
+      await logActivity(user, "key_delete", existing.code, req);
       return jsonOk({ id, deactivated: true });
     }
 
@@ -218,6 +222,15 @@ export async function PATCH(req: Request) {
       )
       .bind(code, jenis, barcode, nextOverdue, id)
       .run();
+
+    await logActivity(
+      user,
+      "key_update",
+      body.regenerate_token
+        ? `${code} · token QR baru`
+        : `${code} · ${jenis}`,
+      req
+    );
 
     return jsonOk({ id, code, jenis, barcode });
   } catch (e) {

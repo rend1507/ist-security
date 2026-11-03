@@ -72,7 +72,7 @@ export function canManageUsers(role: string): boolean {
   return role === "superadmin";
 }
 
-/** Log masuk / keluar (audit) — hanya Super Admin */
+/** Log aktivitas (masuk/keluar + aksi) — hanya Super Admin */
 export function canViewSessionLogs(role: string): boolean {
   return role === "superadmin";
 }

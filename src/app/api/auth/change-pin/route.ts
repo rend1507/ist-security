@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity-log";
 import { getSessionUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { hashPin, isValidPinFormat, verifyPin } from "@/lib/pin";
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
 
     const db = await getDb();
     let targetId = actor.id;
+    let targetUsername = actor.username;
     let notifyEmail = actor.email;
 
     const targetName = body.targetUsername?.trim().toLowerCase() ?? "";
@@ -42,6 +44,7 @@ export async function POST(req: Request) {
         .first<{ id: number; email: string | null; pin_hash: string }>();
       if (!target) return jsonErr("Petugas tidak ditemukan.", 404);
       targetId = target.id;
+      targetUsername = targetName;
       notifyEmail = target.email;
     } else {
       const current = body.currentPin?.trim() ?? "";
@@ -74,6 +77,15 @@ export async function POST(req: Request) {
       )
       .bind(targetId, actor.id, notifyEmail)
       .run();
+
+    await logActivity(
+      actor,
+      "pin_change",
+      targetUsername === actor.username
+        ? targetUsername
+        : `${targetUsername} (oleh ${actor.username})`,
+      req
+    );
 
     return jsonOk({
       message:

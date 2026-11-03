@@ -80,7 +80,7 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
     nav.push({ href: "/admin/master", label: "Data peminjam", key: "master" });
   }
   if (canViewSessionLogs(user.role)) {
-    nav.push({ href: "/log-akses", label: "Log akses", key: "akses" });
+    nav.push({ href: "/log-akses", label: "Log aktivitas", key: "akses" });
   }
 
   function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

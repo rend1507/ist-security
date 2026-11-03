@@ -5,7 +5,12 @@ import { useCallback, useEffect, useState } from "react";
 import { todayWibDate, wibDateDaysAgo } from "@/lib/dates";
 import { btnPrimary, tableShell } from "@/lib/ui";
 
-type Summary = { login: number; logout: number; total: number };
+type Summary = {
+  login: number;
+  logout: number;
+  actions: number;
+  total: number;
+};
 
 /** Ringkasan 7 hari di Dashboard — hanya Super Admin. */
 export function SessionAccessSummary() {
@@ -50,9 +55,7 @@ export function SessionAccessSummary() {
     <section className={`${tableShell} space-y-3 p-3 sm:p-4`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">
-            Log masuk / keluar
-          </h2>
+          <h2 className="text-lg font-bold text-slate-900">Log aktivitas</h2>
           <p className="mt-1 text-base text-slate-700">
             7 hari terakhir ({from} — {to}) · Super Admin
           </p>
@@ -68,7 +71,7 @@ export function SessionAccessSummary() {
         </p>
       )}
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         <div className="rounded-md border-2 border-emerald-400 bg-emerald-50 px-3 py-3">
           <p className="text-sm font-bold uppercase tracking-wide text-emerald-900">
             Masuk
@@ -83,6 +86,14 @@ export function SessionAccessSummary() {
           </p>
           <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-slate-900 sm:text-3xl">
             {summary?.logout ?? "—"}
+          </p>
+        </div>
+        <div className="rounded-md border-2 border-amber-300 bg-amber-50 px-3 py-3">
+          <p className="text-sm font-bold uppercase tracking-wide text-amber-900">
+            Aksi
+          </p>
+          <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-amber-950 sm:text-3xl">
+            {summary?.actions ?? "—"}
           </p>
         </div>
         <div className="rounded-md border-2 border-blue-300 bg-blue-50 px-3 py-3">

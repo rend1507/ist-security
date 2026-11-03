@@ -141,7 +141,7 @@ export function IconClock({ className = base }: IconProps) {
   );
 }
 
-/** Log masuk / keluar */
+/** Log aktivitas */
 export function IconDoor({ className = base }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>

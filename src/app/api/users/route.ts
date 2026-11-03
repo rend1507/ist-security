@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity-log";
 import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
@@ -105,6 +106,13 @@ export async function POST(req: Request) {
       .bind(username, name, password_hash, pin_hash, role, email)
       .run();
 
+    await logActivity(
+      user,
+      "user_create",
+      `${username} · ${ROLE_LABELS[role as Role] || role}`,
+      req
+    );
+
     return jsonOk({
       id: Number(res.meta.last_row_id),
       username,
@@ -139,10 +147,10 @@ export async function PATCH(req: Request) {
     const db = await getDb();
     const existing = await db
       .prepare(
-        `SELECT id, role FROM users WHERE id = ? AND deleted_at IS NULL`
+        `SELECT id, username, role FROM users WHERE id = ? AND deleted_at IS NULL`
       )
       .bind(id)
-      .first<{ id: number; role: string }>();
+      .first<{ id: number; username: string; role: string }>();
     if (!existing) return jsonErr("Akun tidak ditemukan.", 404);
 
     if (body.deactivate) {
@@ -159,6 +167,7 @@ export async function PATCH(req: Request) {
         )
         .bind(id)
         .run();
+      await logActivity(user, "user_deactivate", existing.username, req);
       return jsonOk({ id, deactivated: true });
     }
 
@@ -205,6 +214,14 @@ export async function PATCH(req: Request) {
         )
         .bind(password_hash, id)
         .run();
+      await logActivity(
+        user,
+        "password_change",
+        existing.username === user.username
+          ? existing.username
+          : `${existing.username} (oleh ${user.username})`,
+        req
+      );
     }
     if (pin) {
       const pin_hash = await hashPin(pin);
@@ -227,6 +244,14 @@ export async function PATCH(req: Request) {
         )
         .bind(id, user.id, target?.email ?? null)
         .run();
+      await logActivity(
+        user,
+        "pin_change",
+        existing.username === user.username
+          ? existing.username
+          : `${existing.username} (oleh ${user.username})`,
+        req
+      );
     }
 
     return jsonOk({

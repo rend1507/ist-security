@@ -5,7 +5,7 @@ import { canViewSessionLogs } from "@/lib/roles";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Log akses" };
+export const metadata = { title: "Log aktivitas" };
 
 export default async function LogAksesPage() {
   const user = await requirePageUser();
@@ -14,7 +14,7 @@ export default async function LogAksesPage() {
   }
 
   return (
-    <AppShell title="Log masuk / keluar" active="akses" user={user}>
+    <AppShell title="Log aktivitas" active="akses" user={user}>
       <SessionAccessLogPanel />
     </AppShell>
   );

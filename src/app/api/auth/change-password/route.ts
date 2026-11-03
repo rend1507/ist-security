@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity-log";
 import { getSessionUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
 
     const db = await getDb();
     let targetId = actor.id;
+    let targetUsername = actor.username;
     const targetName = body.targetUsername?.trim().toLowerCase() ?? "";
 
     if (targetName) {
@@ -46,6 +48,7 @@ export async function POST(req: Request) {
         .first<{ id: number }>();
       if (!target) return jsonErr("Petugas tidak ditemukan.", 404);
       targetId = target.id;
+      targetUsername = targetName;
     } else {
       const current = body.currentPassword ?? "";
       if (!current) return jsonErr("Isi password lama.", 400);
@@ -66,6 +69,15 @@ export async function POST(req: Request) {
       )
       .bind(passwordHash, targetId)
       .run();
+
+    await logActivity(
+      actor,
+      "password_change",
+      targetUsername === actor.username
+        ? targetUsername
+        : `${targetUsername} (oleh ${actor.username})`,
+      req
+    );
 
     return jsonOk({ message: "Password berhasil diubah." });
   } catch (e) {

@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity-log";
 import { requireUser } from "@/lib/auth";
 import { jsonErr, jsonOk } from "@/lib/db";
 import { canTransact } from "@/lib/roles";
@@ -28,6 +29,12 @@ export async function POST(req: Request) {
       giveBackAt: body.giveBackAt,
     });
     if (!result.ok) return jsonErr(result.error, 400);
+    await logActivity(
+      user,
+      "jam_edit",
+      `${result.data.keyCode} · ke-${result.data.editCount}/4`,
+      req
+    );
     return jsonOk(result.data);
   } catch (e) {
     return jsonErr(e instanceof Error ? e.message : "Gagal ubah jam", 500);

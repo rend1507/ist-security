@@ -187,7 +187,10 @@ export async function editBorrowTimes(opts: {
   const db = await getDb();
   const log = await db
     .prepare(
-      `SELECT id, take_out_at, give_back_at, edit_count FROM borrow_logs WHERE id = ?`
+      `SELECT bl.id, bl.take_out_at, bl.give_back_at, bl.edit_count, k.code AS key_code
+       FROM borrow_logs bl
+       JOIN keys k ON k.id = bl.key_id
+       WHERE bl.id = ?`
     )
     .bind(opts.logId)
     .first<{
@@ -195,6 +198,7 @@ export async function editBorrowTimes(opts: {
       take_out_at: string;
       give_back_at: string | null;
       edit_count: number;
+      key_code: string;
     }>();
 
   if (!log) return { ok: false as const, error: "Catatan pinjam tidak ditemukan." };
@@ -255,6 +259,7 @@ export async function editBorrowTimes(opts: {
   return {
     ok: true as const,
     data: {
+      keyCode: log.key_code,
       editCount: log.edit_count + 1,
       remaining: MAX_EDITS - (log.edit_count + 1),
     },
