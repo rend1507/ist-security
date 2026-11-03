@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { SessionUser } from "@/lib/auth";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { ChangePinForm } from "@/components/ChangePinForm";
 import { HeaderClock } from "@/components/HeaderClock";
 import {
@@ -53,6 +54,7 @@ const NAV_ICONS: Record<NavKey, React.ReactNode> = {
 
 export function AppShell({ title, children, active, user }: AppShellProps) {
   const [pinOpen, setPinOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const canUsers = canManageUsers(user.role);
@@ -112,17 +114,30 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
             </p>
             <div className="flex flex-col gap-1.5">
               {canChangeOwnPin(user.role) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPinOpen(true);
-                    onNavigate?.();
-                  }}
-                  className={pillIdleDark}
-                >
-                  <IconLock />
-                  Ganti PIN
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPasswordOpen(true);
+                      onNavigate?.();
+                    }}
+                    className={pillIdleDark}
+                  >
+                    <IconKey />
+                    Ganti password
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPinOpen(true);
+                      onNavigate?.();
+                    }}
+                    className={pillIdleDark}
+                  >
+                    <IconLock />
+                    Ganti PIN
+                  </button>
+                </>
               )}
               {showSettings && (
                 <button
@@ -229,6 +244,12 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {passwordOpen && (
+        <Modal title="Ganti password" onClose={() => setPasswordOpen(false)}>
+          <ChangePasswordForm isSuperadmin={user.role === "superadmin"} />
+        </Modal>
       )}
 
       {pinOpen && (

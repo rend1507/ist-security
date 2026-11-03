@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { getDb, jsonErr, jsonOk } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
-import { hashPin } from "@/lib/pin";
+import { hashPin, isValidPinFormat } from "@/lib/pin";
 import {
   ASSIGNABLE_ROLES,
   ROLE_LABELS,
@@ -129,6 +129,8 @@ export async function PATCH(req: Request) {
       id?: number;
       name?: string;
       role?: string;
+      password?: string;
+      pin?: string;
       deactivate?: boolean;
     };
     const id = Number(body.id);
@@ -174,6 +176,15 @@ export async function PATCH(req: Request) {
       }
     }
 
+    const password = body.password?.trim() ?? "";
+    const pin = body.pin?.trim() ?? "";
+    if (password && password.length < 6) {
+      return jsonErr("Password baru minimal 6 karakter.", 400);
+    }
+    if (pin && !isValidPinFormat(pin)) {
+      return jsonErr("PIN baru harus 6 angka.", 400);
+    }
+
     await db
       .prepare(
         `UPDATE users
@@ -185,7 +196,45 @@ export async function PATCH(req: Request) {
       .bind(name ?? null, role ?? null, id)
       .run();
 
-    return jsonOk({ id, updated: true });
+    if (password) {
+      const password_hash = await hashPassword(password);
+      await db
+        .prepare(
+          `UPDATE users SET password_hash = ?, updated_at = datetime('now')
+           WHERE id = ?`
+        )
+        .bind(password_hash, id)
+        .run();
+    }
+    if (pin) {
+      const pin_hash = await hashPin(pin);
+      await db
+        .prepare(
+          `UPDATE users SET pin_hash = ?, updated_at = datetime('now')
+           WHERE id = ?`
+        )
+        .bind(pin_hash, id)
+        .run();
+      const target = await db
+        .prepare("SELECT email FROM users WHERE id = ?")
+        .bind(id)
+        .first<{ email: string | null }>();
+      await db
+        .prepare(
+          `INSERT INTO pin_change_logs (
+            user_id, changed_by_user_id, notify_email, email_status, created_at
+          ) VALUES (?, ?, ?, 'simulated', datetime('now'))`
+        )
+        .bind(id, user.id, target?.email ?? null)
+        .run();
+    }
+
+    return jsonOk({
+      id,
+      updated: true,
+      passwordChanged: Boolean(password),
+      pinChanged: Boolean(pin),
+    });
   } catch (e) {
     return jsonErr(e instanceof Error ? e.message : "Gagal mengubah akun", 500);
   }

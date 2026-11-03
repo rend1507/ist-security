@@ -28,7 +28,8 @@ export async function POST(req: Request) {
     let targetId = actor.id;
     let notifyEmail = actor.email;
 
-    if (body.targetUsername && body.targetUsername !== actor.username) {
+    const targetName = body.targetUsername?.trim().toLowerCase() ?? "";
+    if (targetName) {
       if (!canChangeAnyPin(actor.role)) {
         return jsonErr("Hanya Super Admin yang bisa ganti PIN orang lain.", 403);
       }
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
           `SELECT id, email, pin_hash FROM users
            WHERE lower(username) = ? AND deleted_at IS NULL`
         )
-        .bind(body.targetUsername.trim().toLowerCase())
+        .bind(targetName)
         .first<{ id: number; email: string | null; pin_hash: string }>();
       if (!target) return jsonErr("Petugas tidak ditemukan.", 404);
       targetId = target.id;

@@ -69,7 +69,7 @@ export function ChangePinForm({ isSuperadmin }: { isSuperadmin: boolean }) {
             checked={forOther}
             onChange={(e) => setForOther(e.target.checked)}
           />
-          Ganti PIN petugas lain (Super Admin)
+          Ganti PIN petugas lain / diri sendiri tanpa PIN lama
         </label>
       )}
       {forOther && isSuperadmin ? (

@@ -8,15 +8,20 @@ import {
   type Role,
 } from "@/lib/roles";
 import { UI_MSG, uiAlert, uiApiAlert } from "@/lib/public-error";
+import { Modal } from "@/components/Modal";
 import {
   alertError,
   alertOk,
   btnDanger,
+  btnGhost,
   btnNeutral,
+  btnPrimary,
   btnRow,
+  inputBase,
   pillActive,
   pillIdle,
   tableHead,
+  textLabel,
 } from "@/lib/ui";
 
 type UserRow = {
@@ -46,6 +51,11 @@ export function SuperadminPanel({
   const [uRole, setURole] = useState<Role>("security");
   const [uPass, setUPass] = useState("");
   const [uPin, setUPin] = useState("123456");
+  const [resetUser, setResetUser] = useState<UserRow | null>(null);
+  const [resetKind, setResetKind] = useState<"password" | "pin" | null>(null);
+  const [resetValue, setResetValue] = useState("");
+  const [resetConfirm, setResetConfirm] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   const activeTab = showUsersTab ? tab : "overdue";
 
@@ -102,6 +112,57 @@ export function SuperadminPanel({
       await loadUsers();
     } finally {
       setLoading(false);
+    }
+  }
+
+  function openReset(user: UserRow, kind: "password" | "pin") {
+    setResetUser(user);
+    setResetKind(kind);
+    setResetValue("");
+    setResetConfirm("");
+    setError(null);
+    setMsg(null);
+  }
+
+  async function saveReset() {
+    if (!resetUser || !resetKind) return;
+    if (resetValue !== resetConfirm) {
+      setError(
+        resetKind === "pin"
+          ? "PIN baru dan konfirmasi tidak sama."
+          : "Password baru dan konfirmasi tidak sama."
+      );
+      return;
+    }
+    setResetLoading(true);
+    setError(null);
+    setMsg(null);
+    try {
+      const body =
+        resetKind === "pin"
+          ? { id: resetUser.id, pin: resetValue }
+          : { id: resetUser.id, password: resetValue };
+      const res = await fetch("/api/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = (await res.json()) as { ok: boolean; error?: string };
+      if (!json.ok) {
+        uiApiAlert(setError, UI_MSG.save, res, json);
+        return;
+      }
+      setMsg(
+        resetKind === "pin"
+          ? `PIN ${resetUser.username} diubah.`
+          : `Password ${resetUser.username} diubah.`
+      );
+      setResetUser(null);
+      setResetKind(null);
+    } catch (e) {
+      uiAlert(setError, UI_MSG.network, e);
+    } finally {
+      setResetLoading(false);
     }
   }
 
@@ -163,6 +224,7 @@ export function SuperadminPanel({
           <ul className="list-inside list-disc space-y-1 text-base text-amber-950">
             <li>Tidak bisa menambah Super Admin lewat aplikasi</li>
             <li>Tidak bisa menonaktifkan akun Super Admin (termasuk sendiri)</li>
+            <li>Password dan PIN semua akun (termasuk Super Admin) bisa diganti dari daftar</li>
           </ul>
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="block text-base font-semibold">
@@ -250,17 +312,31 @@ export function SuperadminPanel({
                       <td className="px-3 py-2.5 text-base">{u.name}</td>
                       <td className="px-3 py-2.5 text-base">{u.role_label}</td>
                       <td className="px-3 py-2.5">
-                        {locked ? (
-                          <span className="text-base text-slate-500">—</span>
-                        ) : (
+                        <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            className={`${btnDanger} ${btnRow}`}
-                            onClick={() => deactivate(u.id)}
+                            className={`${btnGhost} ${btnRow}`}
+                            onClick={() => openReset(u, "password")}
                           >
-                            Nonaktifkan
+                            Password
                           </button>
-                        )}
+                          <button
+                            type="button"
+                            className={`${btnGhost} ${btnRow}`}
+                            onClick={() => openReset(u, "pin")}
+                          >
+                            PIN
+                          </button>
+                          {locked ? null : (
+                            <button
+                              type="button"
+                              className={`${btnDanger} ${btnRow}`}
+                              onClick={() => deactivate(u.id)}
+                            >
+                              Nonaktifkan
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -269,6 +345,66 @@ export function SuperadminPanel({
             </table>
           </div>
         </div>
+      )}
+
+      {resetUser && resetKind && (
+        <Modal
+          title={
+            resetKind === "pin"
+              ? `Ganti PIN · ${resetUser.username}`
+              : `Ganti password · ${resetUser.username}`
+          }
+          onClose={() => {
+            setResetUser(null);
+            setResetKind(null);
+          }}
+        >
+          <label className={textLabel}>
+            {resetKind === "pin" ? "PIN baru (6 angka)" : "Password baru"}
+            <input
+              type="password"
+              inputMode={resetKind === "pin" ? "numeric" : undefined}
+              maxLength={resetKind === "pin" ? 6 : undefined}
+              autoComplete="new-password"
+              value={resetValue}
+              onChange={(e) =>
+                setResetValue(
+                  resetKind === "pin"
+                    ? e.target.value.replace(/\D/g, "").slice(0, 6)
+                    : e.target.value
+                )
+              }
+              className={`${inputBase} ${resetKind === "pin" ? "font-mono tracking-[0.35em]" : ""}`}
+            />
+          </label>
+          <label className={textLabel}>
+            {resetKind === "pin" ? "Ulangi PIN baru" : "Ulangi password baru"}
+            <input
+              type="password"
+              inputMode={resetKind === "pin" ? "numeric" : undefined}
+              maxLength={resetKind === "pin" ? 6 : undefined}
+              autoComplete="new-password"
+              value={resetConfirm}
+              onChange={(e) =>
+                setResetConfirm(
+                  resetKind === "pin"
+                    ? e.target.value.replace(/\D/g, "").slice(0, 6)
+                    : e.target.value
+                )
+              }
+              className={`${inputBase} ${resetKind === "pin" ? "font-mono tracking-[0.35em]" : ""}`}
+            />
+          </label>
+          {error && <p className={alertError}>{error}</p>}
+          <button
+            type="button"
+            disabled={resetLoading}
+            onClick={() => void saveReset()}
+            className={btnPrimary}
+          >
+            {resetLoading ? "Menyimpan…" : "Simpan"}
+          </button>
+        </Modal>
       )}
     </div>
   );
