@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    let payload = body.backupId
+    const payload = body.backupId
       ? await getBackupPayload(Number(body.backupId))
       : parseUploadedPayload(body.payload);
     if (!payload) {
