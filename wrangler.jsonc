@@ -17,6 +17,12 @@
       "migrations_dir": "migrations"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "BACKUPS",
+      "bucket_name": "ist-security-backups"
+    }
+  ],
   "vars": {
     "APP_NAME": "IST Security",
     "DEFAULT_OVERDUE_MINUTES": "5"

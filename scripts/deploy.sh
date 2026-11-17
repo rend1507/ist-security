@@ -52,6 +52,11 @@ if ! echo "$WHOAMI" | grep -qi 'umrplku'; then
   echo "WARN: whoami tidak menyebut umrplku — cek manual."
 fi
 
+echo "==> Pastikan bucket R2 cadangan"
+if ! npx wrangler r2 bucket list 2>/dev/null | grep -q 'ist-security-backups'; then
+  npx wrangler r2 bucket create ist-security-backups
+fi
+
 echo "==> Apply migrations D1 remote (${DB_NAME})"
 npx wrangler d1 migrations apply "${DB_NAME}" --remote
 

@@ -7,6 +7,7 @@ import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { ChangePinForm } from "@/components/ChangePinForm";
 import { HeaderClock } from "@/components/HeaderClock";
 import {
+  IconArchive,
   IconChart,
   IconClock,
   IconDatabase,
@@ -23,6 +24,7 @@ import { Modal } from "@/components/Modal";
 import { SuperadminPanel } from "@/components/SuperadminPanel";
 import { OPEN_SETTINGS_EVENT } from "@/lib/open-settings";
 import {
+  canBackupRestore,
   canChangeOwnPin,
   canManageMaster,
   canManageUsers,
@@ -34,7 +36,14 @@ import {
   pillIdleDark,
 } from "@/lib/ui";
 
-type NavKey = "dashboard" | "keys" | "logs" | "daftar" | "master" | "akses";
+type NavKey =
+  | "dashboard"
+  | "keys"
+  | "logs"
+  | "daftar"
+  | "master"
+  | "akses"
+  | "backup";
 
 type AppShellProps = {
   title: string;
@@ -50,6 +59,7 @@ const NAV_ICONS: Record<NavKey, React.ReactNode> = {
   daftar: <IconList />,
   master: <IconDatabase />,
   akses: <IconDoor />,
+  backup: <IconArchive />,
 };
 
 export function AppShell({ title, children, active, user }: AppShellProps) {
@@ -81,6 +91,13 @@ export function AppShell({ title, children, active, user }: AppShellProps) {
   }
   if (canViewSessionLogs(user.role)) {
     nav.push({ href: "/log-akses", label: "Log aktivitas", key: "akses" });
+  }
+  if (canBackupRestore(user.role)) {
+    nav.push({
+      href: "/backup-restore",
+      label: "Cadangan & pulih",
+      key: "backup",
+    });
   }
 
   function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export type CloudflareEnv = {
   DB: D1Database;
+  BACKUPS: R2Bucket;
   SESSION_SECRET?: string;
   APP_NAME?: string;
   DEFAULT_OVERDUE_MINUTES?: string;
@@ -20,6 +21,16 @@ export async function getDb(): Promise<D1Database> {
     );
   }
   return env.DB;
+}
+
+export async function getBackupBucket(): Promise<R2Bucket> {
+  const env = await getEnv();
+  if (!env.BACKUPS) {
+    throw new Error(
+      "Binding R2 BACKUPS tidak tersedia. Tambah r2_buckets di wrangler.jsonc."
+    );
+  }
+  return env.BACKUPS;
 }
 
 export function jsonOk<T>(data: T, status = 200): Response {

@@ -77,6 +77,11 @@ export function canViewSessionLogs(role: string): boolean {
   return role === "superadmin";
 }
 
+/** Cadangan & pulih — hanya Super Admin */
+export function canBackupRestore(role: string): boolean {
+  return role === "superadmin";
+}
+
 /** Akun uji di layar Login — Super Admin sengaja tidak ditampilkan. */
 export const DEMO_ACCOUNTS = [
   { id: "sec01", role: "Petugas Security" },

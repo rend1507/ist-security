@@ -12,6 +12,8 @@ export const ACTIVITY_EVENTS = [
   "user_create",
   "user_deactivate",
   "jam_edit",
+  "backup_create",
+  "restore_run",
 ] as const;
 
 export type SessionAccessEvent = (typeof ACTIVITY_EVENTS)[number];
@@ -27,6 +29,8 @@ export const ACTIVITY_EVENT_LABELS: Record<SessionAccessEvent, string> = {
   user_create: "Tambah akun",
   user_deactivate: "Nonaktif akun",
   jam_edit: "Ubah jam",
+  backup_create: "Cadangan",
+  restore_run: "Pulihkan",
 };
 
 export type SessionAccessLogRow = {
